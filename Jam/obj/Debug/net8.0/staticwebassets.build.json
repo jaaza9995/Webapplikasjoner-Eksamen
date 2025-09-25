@@ -1,0 +1,58 @@
+{
+  "Version": 1,
+  "Hash": "J9aGAIPdf6jutxHc6jh5k7qp1MZodf64+UyyhdX11a8=",
+  "Source": "Jam",
+  "BasePath": "_content/Jam",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "Jam/wwwroot",
+      "Source": "Jam",
+      "ContentRoot": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen/Jam/wwwroot/",
+      "BasePath": "_content/Jam",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen/Jam/wwwroot/js/bootstrap.js",
+      "SourceId": "Jam",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen/Jam/wwwroot/",
+      "BasePath": "_content/Jam",
+      "RelativePath": "js/bootstrap.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/js/bootstrap.js"
+    },
+    {
+      "Identity": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen/Jam/wwwroot/js/jquery.min.js",
+      "SourceId": "Jam",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen/Jam/wwwroot/",
+      "BasePath": "_content/Jam",
+      "RelativePath": "js/jquery.min.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/js/jquery.min.js"
+    }
+  ]
+}
