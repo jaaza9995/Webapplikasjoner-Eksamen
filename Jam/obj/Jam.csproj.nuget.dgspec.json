@@ -14,7 +14,7 @@
         "outputPath": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/jaraazad/.nuget/NuGet/NuGet.Config"
+          "/Users/siggy/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
