@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;       
 using Microsoft.EntityFrameworkCore;  
-using Jam.Data;                       
+using Jam.DAL;                       
 using Jam.ViewModels;                 
 
 namespace Jam.Controllers
