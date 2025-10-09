@@ -2386,11 +2386,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen/Jam/Jam.csproj",
+      "projectUniqueName": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Jam.csproj",
       "projectName": "Jam",
-      "projectPath": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen/Jam/Jam.csproj",
+      "projectPath": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Jam.csproj",
       "packagesPath": "/Users/jaraazad/.nuget/packages/",
-      "outputPath": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen/Jam/obj/",
+      "outputPath": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/jaraazad/.nuget/NuGet/NuGet.Config"
