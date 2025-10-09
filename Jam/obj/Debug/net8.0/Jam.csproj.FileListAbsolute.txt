@@ -196,3 +196,5 @@
 /Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/obj/Debug/net8.0/Jam.pdb
 /Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/obj/Debug/net8.0/Jam.genruntimeconfig.cache
 /Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/obj/Debug/net8.0/ref/Jam.dll
+/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/obj/Debug/net8.0/Jam.RazorAssemblyInfo.cache
+/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/obj/Debug/net8.0/Jam.RazorAssemblyInfo.cs
