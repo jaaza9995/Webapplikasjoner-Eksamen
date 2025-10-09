@@ -1,0 +1,65 @@
+@model Story
+
+<h2>Edit Game/h2>
+
+<form asp-action="Update">
+    <input type="hidden" asp-for="StoryId" />
+    <div class="form-group">
+        <label asp-for="Title"></label><span class="text-danger">*</span>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Description"></label>
+        <input asp-for="Description" class="form-control" />
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+    <input type="hidden" asp-for="QuestionId" />
+    <div class="form-group">
+        <label asp-for="Question"></label><span class="text-danger">*</span>
+        <input asp-for="Question" class="form-control" />
+        <span asp-validation-for="Question" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Answer1"></label>
+        <input asp-for="Answer1" class="form-control" />
+        <span asp-validation-for="Answer1" class="text-danger"></span>
+    </div>
+        <div class="form-group">
+        <label asp-for="Answer2"></label>
+        <input asp-for="Answer2" class="form-control" />
+        <span asp-validation-for="Answer2" class="text-danger"></span>
+    </div>
+        <div class="form-group">
+        <label asp-for="Answer3"></label>
+        <input asp-for="Answer3" class="form-control" />
+        <span asp-validation-for="Answer3" class="text-danger"></span>
+    </div>
+        <div class="form-group">
+        <label asp-for="Answer4"></label>
+        <input asp-for="Answer4" class="form-control" />
+        <span asp-validation-for="Answer4" class="text-danger"></span>
+    </div>
+        <div class="form-group">
+        <label asp-for="Answer1Ending"></label>
+        <input asp-for="Answer1Ending" class="form-control" />
+        <span asp-validation-for="Answer1Ending" class="text-danger"></span>
+    </div>
+        <div class="form-group">
+        <label asp-for="Answer2Ending"></label>
+        <input asp-for="Answer2Ending" class="form-control" />
+        <span asp-validation-for="Answer2Ending" class="text-danger"></span>
+    </div>
+        <div class="form-group">
+        <label asp-for="Answer3Ending"></label>
+        <input asp-for="Answer3Ending" class="form-control" />
+        <span asp-validation-for="Answer3Ending" class="text-danger"></span>
+    </div>
+        <div class="form-group">
+        <label asp-for="Answer4Ending"></label>
+        <input asp-for="Answer4Ending" class="form-control" />
+        <span asp-validation-for="Answer4Ending" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

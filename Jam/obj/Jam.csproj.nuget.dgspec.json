@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen/Jam/Jam.csproj": {}
+    "/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Jam.csproj": {}
   },
   "projects": {
-    "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen/Jam/Jam.csproj": {
+    "/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Jam.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen/Jam/Jam.csproj",
+        "projectUniqueName": "/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Jam.csproj",
         "projectName": "Jam",
-        "projectPath": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen/Jam/Jam.csproj",
-        "packagesPath": "/Users/jaraazad/.nuget/packages/",
-        "outputPath": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen/Jam/obj/",
+        "projectPath": "/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Jam.csproj",
+        "packagesPath": "/Users/siggy/.nuget/packages/",
+        "outputPath": "/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/jaraazad/.nuget/NuGet/NuGet.Config"
+          "/Users/siggy/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
