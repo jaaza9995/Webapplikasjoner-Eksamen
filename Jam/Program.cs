@@ -21,6 +21,13 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
+using (var scope = app.Services.CreateScope()) // skal fjernes når ting er inne
+{
+    var db = scope.ServiceProvider.GetRequiredService<StoryDbContext>();
+    db.Database.EnsureCreated(); // creates the database + tables if not exist
+    Console.WriteLine($"Database created/verified at: {System.IO.Path.GetFullPath("StoryDatabase.db")}");
+}
+
 //app.UseStaticFiles();
 
 app.MapControllerRoute(

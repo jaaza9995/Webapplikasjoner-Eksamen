@@ -7,7 +7,7 @@ public class StoryDbContext : DbContext
 {
     public StoryDbContext(DbContextOptions<StoryDbContext> options) : base(options)
     {
-        Database.EnsureCreated();
+        //Database.EnsureCreated();
     }
 
     public DbSet<Story> Stories { get; set; }
