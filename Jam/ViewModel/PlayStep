@@ -1,0 +1,9 @@
+public class PlayStepVM
+{
+    public Guid SessionId { get; set; }
+    public string StoryTitle { get; set; } = "";
+    public int Score { get; set; }
+    public int Hearts { get; set; }
+    public Difficulty Level { get; set; }
+    public Act Act { get; set; } = default!;
+}
