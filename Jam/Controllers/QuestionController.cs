@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+/*using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Jam.Models;
 
@@ -62,3 +62,4 @@ public class QuestionController : Controller
         return RedirectToAction(nameof(Index), new { sceneId });
     }
 }
+*/

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+/*using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Jam.Models;
 
@@ -66,3 +66,4 @@ public class SceneController : Controller
         return RedirectToAction(nameof(Index), new { storyId });
     }
 }
+*/

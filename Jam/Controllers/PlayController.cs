@@ -1,6 +1,5 @@
-using Microsoft.AspNetCore.Mvc;      
-using Microsoft.EntityFrameworkCore;
-using Jam.Models;                    
+/*using Microsoft.AspNetCore.Mvc;      
+using Microsoft.EntityFrameworkCore;                 
 
 namespace Jam.Controllers
 {
@@ -9,11 +8,10 @@ namespace Jam.Controllers
     {
         private readonly AppDbContext _db; // Felt som gir tilgang til databasen via Entity Framework
 
-        public PlayController(AppDbContext db)
+        public PlayController(AppDbContext db) // Konstruktør 
         {
             _db = db;
         }
-            // Konstruktør 
 
         // GET: /Play
         public IActionResult Index()
@@ -153,3 +151,4 @@ namespace Jam.Controllers
         }
     }
 }
+*/

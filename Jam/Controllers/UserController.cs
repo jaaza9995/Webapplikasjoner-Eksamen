@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+/*using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Jam.Models;
 
@@ -55,3 +55,4 @@ public class UserController : Controller
         return RedirectToAction(nameof(Index));
     }
 }
+*/

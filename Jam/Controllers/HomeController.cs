@@ -1,7 +1,5 @@
-using Microsoft.AspNetCore.Mvc;       
-using Microsoft.EntityFrameworkCore;  
-using Jam.DAL;                       
-using Jam.ViewModels;                 
+/*using Microsoft.AspNetCore.Mvc;       
+using Microsoft.EntityFrameworkCore;                            
 
 namespace Jam.Controllers
 {
@@ -17,14 +15,14 @@ namespace Jam.Controllers
 
         // Viser forsiden til applikasjonen (GET: /Home/Index)
         // IActionResult - metoden returnerer et resultat, vanligvis en View (HTML-side)
-        public Task<IActionResult> Index()
+        public IActionResult Index()
         {
             return View(); // returnerer Views/Home/Index.cshtml
         }
 
         // Viser skjemaet der brukeren kan skrive inn en ID koden (GET: /Home/AddNewGame)
         [HttpGet] 
-        public async Task<IActionResult> AddNewGame()
+        public async IActionResult AddNewGame()
         {
             var viewModel = new EnterCodeVM(); // oppretter et tomt ViewModel-objekt for skjemaet
             return View(viewModel); // sender modellen til visningen (Views/Home/AddNewGame.cshtml)
@@ -59,6 +57,9 @@ namespace Jam.Controllers
 
         // Viser en enkel logg ut-side (GET: /Home/Logout)
         [HttpGet]
-        public Task<IActionResult> Logout() => View(); // viser Views/Home/Logout.cshtml
+        public IActionResult Logout()// viser Views/Home/Logout.cshtml
+        {
+            return View();
+        }
     }
-}
+}*/
