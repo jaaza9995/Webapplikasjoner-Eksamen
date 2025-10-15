@@ -1,65 +1,60 @@
-/*using Microsoft.AspNetCore.Mvc;       
-using Microsoft.EntityFrameworkCore;                            
+using Jam.DAL.StoryDAL;
+using Jam.ViewModels;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Jam.Controllers
 {
+    // HomeController håndterer hovedsiden (forsiden) i applikasjonen og generelle visninger som ikke er knyttet til selve spillet.
     public class HomeController : Controller
     {
-        // Felt som holder på database-tilkoblingen (DbContext)
-        private readonly GameDbContext _db; //GameDbContext er typen til variabelen db
+        private readonly IStoryRepository _stories; // Gir tilgang til historiene i databasen
 
-        public HomeController(GameDbContext db)// Konstruktør 
+        // Konstruktør –> kobler sammen kontrolleren og repositoryet
+        public HomeController(IStoryRepository stories)
         {
-            _db = db; // lagrer databasen i feltet _db, slik at den kan brukes i alle metoder
+            _stories = stories;
         }
 
-        // Viser forsiden til applikasjonen (GET: /Home/Index)
-        // IActionResult - metoden returnerer et resultat, vanligvis en View (HTML-side)
+        // Viser startsiden (Views/Home/Index.cshtml)
         public IActionResult Index()
         {
-            return View(); // returnerer Views/Home/Index.cshtml
+            return View();
         }
 
-        // Viser skjemaet der brukeren kan skrive inn en ID koden (GET: /Home/AddNewGame)
-        [HttpGet] 
-        public async IActionResult AddNewGame()
+        // Viser skjema for å skrive inn spillkode
+        [HttpGet]
+        public IActionResult AddNewGame()
         {
-            var viewModel = new EnterCodeVM(); // oppretter et tomt ViewModel-objekt for skjemaet
-            return View(viewModel); // sender modellen til visningen (Views/Home/AddNewGame.cshtml)
+            return View(new EnterCodeViewModel());
         }
 
-        // Mottar og håndterer skjemaet etter at brukeren har skrevet inn en spillkode (POST: /Home/AddNewGame)
+        // Håndterer innsending av spillkode
         [HttpPost]
-        public async Task<IActionResult> AddNewGame(EnterCodeVM vm)
+        public async Task<IActionResult> AddNewGame(EnterCodeViewModel vm)
         {
-            // Sjekker om dataen brukeren sendte inn (vm) er gyldig i forhold til valideringsregler (f.eks. [Required])
+            // Sjekker om feltet er fylt ut
             if (!ModelState.IsValid)
-                return View(vm); // hvis ugyldig: vis skjemaet igjen med feilmeldinger
+                return View(vm);
 
-            // Søker i databasen etter et Game der "Code" i databasen matcher "Code" som brukeren skrev inn
-            // AsNoTracking() = raskere fordi vi ikke skal oppdatere objektet (bare lese)
-            // FirstOrDefaultAsync() = finn første rad som passer, eller null hvis ingen finnes
-            var game = await _db.Games.AsNoTracking().FirstOrDefaultAsync(g => g.Code == vm.Code); 
+            // Sjekker om koden finnes i databasen
+            var story = await _stories.GetPrivateStoryByCode(vm.Code);
 
-            // Hvis ingen spill med den koden ble funnet
-            if (game == null)
+            // Hvis koden ikke finnes, vis feilmelding
+            if (story == null)
             {
-                // Legger til en feilmelding knyttet til feltet "Code" i ViewModel
                 ModelState.AddModelError(nameof(vm.Code), "Ugyldig kode");
-                // Viser skjemaet igjen med feilmelding
                 return View(vm);
             }
 
-            // Hvis koden var gyldig → send brukeren videre til PlayController.StartByCode
-            // "code" sendes som parameter i URL (for eksempel /Play/StartByCode?code=ABC123)
+            // Hvis koden er gyldig, gå videre til PlayController
             return RedirectToAction("StartByCode", "Play", new { code = vm.Code });
         }
 
-        // Viser en enkel logg ut-side (GET: /Home/Logout)
+        // Viser logg ut-side (Views/Home/Logout.cshtml)
         [HttpGet]
-        public IActionResult Logout()// viser Views/Home/Logout.cshtml
+        public IActionResult Logout()
         {
             return View();
         }
     }
-}*/
+}

@@ -1,69 +1,57 @@
-/*using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Jam.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Jam.Models.Enums;
+using Jam.ViewModels;
+using Jam.DAL;
 
-namespace Jam.Controllers;
-
-[Route("Story/{storyId:int}/Scenes")]
 public class SceneController : Controller
 {
-    private readonly AppDbContext _db;
-    public SceneController(AppDbContext db) => _db = db;
+    private readonly StoryDbContext _db;
+    public SceneController(StoryDbContext db) => _db = db;
 
-    [HttpGet("")]
-    public async Task<IActionResult> Index(int storyId)
+    [HttpGet]
+    public IActionResult Create(int storyId)
     {
-        var scenes = await _db.Scenes.Where(s => s.StoryId == storyId).ToListAsync();
-        ViewBag.StoryId = storyId;
-        return View(scenes);
-    }
+        var vm = new SceneEditViewModel
+        {
+            StoryId = storyId,
+            SceneTypeOptions = Enum.GetValues(typeof(SceneType))
+                .Cast<SceneType>()
+                .Select(t => new SelectListItem
+                {
+                    Text = t.ToString(),
+                    Value = t.ToString()
+                })
+                .ToList(),
 
-    [HttpGet("{id:int}")]
-    public async Task<IActionResult> Details(int storyId, int id)
-    {
-        var scene = await _db.Scenes.FirstOrDefaultAsync(s => s.SceneId == id && s.StoryId == storyId);
-        if (scene == null) return NotFound();
-        return View(scene);
-    }
+            LevelOptions = Enum.GetValues(typeof(DifficultyLevel))
+                .Cast<DifficultyLevel>()
+                .Select(l => new SelectListItem
+                {
+                    Text = l.ToString(),
+                    Value = l.ToString()
+                })
+                .ToList(),
 
-    [HttpGet("Create")]
-    public IActionResult Create(int storyId) => View(new Scene { StoryId = storyId });
+            PreviousSceneOptions = _db.Scenes
+                .Where(s => s.StoryId == storyId)
+                .Select(s => new SelectListItem
+                {
+                    Text = s.SceneText,
+                    Value = s.SceneId.ToString()
+                })
+                .ToList(),
 
-    [HttpPost("Create")]
-    public async Task<IActionResult> Create(int storyId, Scene model)
-    {
-        if (!ModelState.IsValid) return View(model);
-        model.StoryId = storyId;
-        _db.Scenes.Add(model);
-        await _db.SaveChangesAsync();
-        return RedirectToAction(nameof(Index), new { storyId });
-    }
+            NextSceneOptions = _db.Scenes
+                .Where(s => s.StoryId == storyId)
+                .Select(s => new SelectListItem
+                {
+                    Text = s.SceneText,
+                    Value = s.SceneId.ToString()
+                })
+                .ToList()
+        };
 
-    [HttpGet("{id:int}/Edit")]
-    public async Task<IActionResult> Edit(int storyId, int id)
-    {
-        var scene = await _db.Scenes.FirstOrDefaultAsync(s => s.SceneId == id && s.StoryId == storyId);
-        if (scene == null) return NotFound();
-        return View(scene);
-    }
-
-    [HttpPost("{id:int}/Edit")]
-    public async Task<IActionResult> Edit(int storyId, int id, Scene model)
-    {
-        if (!ModelState.IsValid) return View(model);
-        _db.Update(model);
-        await _db.SaveChangesAsync();
-        return RedirectToAction(nameof(Details), new { storyId, id = model.SceneId });
-    }
-
-    [HttpPost("{id:int}/Delete")]
-    public async Task<IActionResult> Delete(int storyId, int id)
-    {
-        var scene = await _db.Scenes.FirstOrDefaultAsync(s => s.SceneId == id && s.StoryId == storyId);
-        if (scene == null) return NotFound();
-        _db.Remove(scene);
-        await _db.SaveChangesAsync();
-        return RedirectToAction(nameof(Index), new { storyId });
+        return View(vm);
     }
 }
-*/
