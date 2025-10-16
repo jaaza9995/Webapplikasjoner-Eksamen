@@ -4,9 +4,9 @@ namespace Jam.DAL.StoryDAL;
 
 public interface IStoryRepository
 {
-    Task<IEnumerable<Story>> GetAllStories();
-    Task<IEnumerable<Story>> GetAllPublicStories();
-    Task<IEnumerable<Story>> GetStoriesByUserId(int userId);
+    Task<IEnumerable<Story>> GetAllStories(); //brukt i StoryController
+    Task<IEnumerable<Story>> GetAllPublicStories(); //brukt i BrowseController
+    Task<IEnumerable<Story>> GetStoriesByUserId(int userId); //
     Task<IEnumerable<Story>> GetMostRecentPlayedStories(int userId, int count = 5);
     Task<Story?> GetStoryById(int id);
     Task<Story?> GetPublicStoryById(int id);

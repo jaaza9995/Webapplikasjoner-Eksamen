@@ -1,75 +1,56 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Jam.DAL;              // din DbContext
-using Jam.Models;
-using Jam.Models.Enums;
+using Jam.DAL.StoryDAL;
 using Jam.ViewModels;
-using System.Linq;
 
 namespace Jam.Controllers
 {
     public class BrowseController : Controller
     {
-        private readonly StoryRepository _db; // bytt til din DbContext om den heter noe annet
+        private readonly IStoryRepository _stories;
 
-        public BrowseController(StoryRepository db)
+        public BrowseController(IStoryRepository stories)
         {
-            _db = db;
+            _stories = stories;
         }
-
-        // GET /Browse?q=...
-        // Viser offentlige spill + supportsøk på tittel
+        // GET /Browse
         [HttpGet]
-        public async Task<IActionResult> Index(string? q)
+        public async Task<IActionResult> Index(string? search)
         {
-            var query = _db.Stories
-                .Include(s => s.Scenes)
-                .Where(s => s.IsPublic); // forutsetter et felt IsPublic
+            var allStories = await _stories.GetAllPublicStories();
 
-            if (!string.IsNullOrWhiteSpace(q))
-                query = query.Where(s => EF.Functions.Like(s.Title, $"%{q}%"));
+            if (!string.IsNullOrWhiteSpace(search))
+                allStories = allStories
+                    .Where(s => s.Title.Contains(search, StringComparison.OrdinalIgnoreCase));
 
-            var stories = await query
-                .OrderBy(s => s.Title)
-                .Select(s => new BrowseCardViewModel
-                {
-                    StoryId = s.StoryId,
-                    Title = s.Title,
-                    Description = s.Description ?? "",
-                    Code = s.Code, // kan brukes til Play via kode om ønskelig
-                    QuestionCount = s.Scenes.Count(x => x.SceneType == SceneType.Question),
-                    Level = s.Scenes.Any()
-                        ? s.Scenes.Select(x => x.Level).OrderBy(x => x).First() // enkel representant
-                        : DifficultyLevel.Easy,
-                    IntroPreview = s.Scenes
-                        .Where(x => x.SceneType == SceneType.Intro)
-                        .OrderBy(x => x.SceneId)
-                        .Select(x => x.Body)
-                        .FirstOrDefault() ?? "", // kort intro-tekst i kortet
-                })
-                .ToListAsync();
-
-            var vm = new BrowseIndexViewModel
+            // Bruk eksisterende PlayNewPublicGameViewModel
+            var vm = new PlayNewPublicGameViewModel
             {
-                Query = q ?? "",
-                Cards = stories,
-                PrivateCode = new EnterCodeViewModel()
+                SearchQuery = search,
+                Stories = allStories.Select(s => new StoryListViewModel
+                {
+                    Id = s.StoryId,
+                    Title = s.Title,
+                    Description = s.Description,
+                    QuestionCount = s.Scenes.Count(x => x.SceneType == Models.Enums.SceneType.Question)
+                })
             };
 
             return View(vm);
         }
 
-        // POST /Browse/Private (rosa boksen til høyre)
+        // POST /Browse/Private
         [HttpPost]
-        public IActionResult Private(EnterCodeViewModel model)
+        public async Task<IActionResult> EnterCode(EnterCodeViewModel model)
         {
-            if (!ModelState.IsValid || string.IsNullOrWhiteSpace(model.Code))
+            if (!ModelState.IsValid) return RedirectToAction(nameof(Index));
+
+            var story = await _stories.GetPrivateStoryByCode(model.Code);
+            if (story == null)
             {
-                TempData["PrivateError"] = "Skriv inn en gyldig kode.";
+                TempData["Error"] = "Ugyldig kode.";
                 return RedirectToAction(nameof(Index));
             }
 
-            // send brukeren til PlayController som starter via kode
             return RedirectToAction("StartByCode", "Play", new { code = model.Code });
         }
     }
