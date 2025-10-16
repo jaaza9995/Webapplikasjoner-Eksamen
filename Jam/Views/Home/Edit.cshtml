@@ -1,65 +1,88 @@
-@model Story
+@model Jam.ViewModels.EditStoryViewModel
 
-<h2>Edit Game/h2>
+<h2>Edit Story: @Model.Title</h2>
 
-<form asp-action="Update">
+<form asp-action="Edit" method="post">
     <input type="hidden" asp-for="StoryId" />
-    <div class="form-group">
-        <label asp-for="Title"></label><span class="text-danger">*</span>
-        <input asp-for="Title" class="form-control" />
-        <span asp-validation-for="Title" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Description"></label>
-        <input asp-for="Description" class="form-control" />
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
-    <input type="hidden" asp-for="QuestionId" />
-    <div class="form-group">
-        <label asp-for="Question"></label><span class="text-danger">*</span>
-        <input asp-for="Question" class="form-control" />
-        <span asp-validation-for="Question" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Answer1"></label>
-        <input asp-for="Answer1" class="form-control" />
-        <span asp-validation-for="Answer1" class="text-danger"></span>
-    </div>
+
+    <div>
         <div class="form-group">
-        <label asp-for="Answer2"></label>
-        <input asp-for="Answer2" class="form-control" />
-        <span asp-validation-for="Answer2" class="text-danger"></span>
-    </div>
+            <label asp-for="Title"></label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
         <div class="form-group">
-        <label asp-for="Answer3"></label>
-        <input asp-for="Answer3" class="form-control" />
-        <span asp-validation-for="Answer3" class="text-danger"></span>
-    </div>
+            <label asp-for="Description"></label>
+            <textarea asp-for="Description" class="form-control"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
         <div class="form-group">
-        <label asp-for="Answer4"></label>
-        <input asp-for="Answer4" class="form-control" />
-        <span asp-validation-for="Answer4" class="text-danger"></span>
+            <label asp-for="DifficultyLevel"></label>
+            <select asp-for="DifficultyLevel" asp-items="Model.DifficultyLevels" class="form-control">
+                <option value="">Select difficulty</option>
+            </select>
+            <span asp-validation-for="DifficultyLevel" class="text-danger"></span>
+        </div>
     </div>
-        <div class="form-group">
-        <label asp-for="Answer1Ending"></label>
-        <input asp-for="Answer1Ending" class="form-control" />
-        <span asp-validation-for="Answer1Ending" class="text-danger"></span>
+
+    @for (int s = 0; s < Model.Scenes.Count; s++)
+    {
+        <div class="card mb-4 p-3">
+            <input type="hidden" asp-for="Scenes[@s].SceneId" />
+
+            <div class="mb-2">
+                <label>Scene Text</label>
+                <input asp-for="Scenes[@s].SceneText" class="form-control" />
+            </div>
+
+            @if (Model.Scenes[s].Question != null)
+            {
+                <div class="mb-3">
+                    <label>Question</label>
+                    <input asp-for="Scenes[@s].Question.QuestionText" class="form-control" />
+                </div>
+
+                <h6>Answers</h6>
+                @for (int a = 0; a < Model.Scenes[s].Question.Answers.Count; a++)
+                {
+                    <div class="mb-2">
+                        <input asp-for="Scenes[@s].Question.Answers[@a]" class="form-control" />
+                    </div>
+                }
+                @* legg inn answer endings/feeback senere*@
+                <a asp-action="DeleteQuestion" asp-route-id="@Model.Scenes[s].Question.QuestionId" class="btn btn-danger btn-sm">
+                Delete Question
+                </a>
+            }
+        </div>
+
+
+        <div>
+            <div class="form-group">
+            <label asp-for="EndingGood"></label>
+            <textarea asp-for="EndingGood" class="form-control"></textarea>
+            <span asp-validation-for="EndingGood" class="text-danger"></span>
+
+            <div class="form-group">
+            <label asp-for="EndingNeutral"></label>
+            <textarea asp-for="EndingNeutral" class="form-control"></textarea>
+            <span asp-validation-for="EndingNeutral" class="text-danger"></span>
+            
+            <div class="form-group">
+            <label asp-for="EndingBad"></label>
+            <textarea asp-for="EndingBad" class="form-control"></textarea>
+            <span asp-validation-for="EndingBad" class="text-danger"></span>
+        </div>
+
+   <a asp-action="AddQuestion" class="btn btn-secondary">Add Question</a>
     </div>
-        <div class="form-group">
-        <label asp-for="Answer2Ending"></label>
-        <input asp-for="Answer2Ending" class="form-control" />
-        <span asp-validation-for="Answer2Ending" class="text-danger"></span>
-    </div>
-        <div class="form-group">
-        <label asp-for="Answer3Ending"></label>
-        <input asp-for="Answer3Ending" class="form-control" />
-        <span asp-validation-for="Answer3Ending" class="text-danger"></span>
-    </div>
-        <div class="form-group">
-        <label asp-for="Answer4Ending"></label>
-        <input asp-for="Answer4Ending" class="form-control" />
-        <span asp-validation-for="Answer4Ending" class="text-danger"></span>
-    </div>
-    <button type="submit" class="btn btn-primary">Save Changes</button>
+    }
     <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    <button type="submit" class="btn btn-success">Save Changes</button>
+    <a asp-action="DeleteStory" asp-route-id="@Model.StoryId" class="btn btn-danger mt-3">
+        Delete Story
+    </a>
+
 </form>
