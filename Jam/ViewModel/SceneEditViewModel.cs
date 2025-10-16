@@ -49,13 +49,3 @@ public class SceneEditViewModel
     public List<AnswerOptionEditViewModel> Answers { get; set; } = new();
 }
 
-public class AnswerOptionEditViewModel
-{
-    public int AnswerId { get; set; }// ID for svaret (0 hvis nytt, ellers eksisterende i databasen)
-
-    [Required]
-    public string Text { get; set; } = string.Empty;// Selve svarteksten som vises til spilleren
-
-    [Required]
-    public int? NextSceneId { get; set; } // Hvilken scene man går til hvis dette svaret velges
-}
