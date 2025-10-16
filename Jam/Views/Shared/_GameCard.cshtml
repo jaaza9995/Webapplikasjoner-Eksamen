@@ -1,0 +1,38 @@
+@using Jam.ViewModels
+@using Jam.Models.Enums
+@model Jam.ViewModels.GameCardViewModel
+
+<div class="card mb-3" style="width: 18rem;">
+    <div class="card-body">
+        <h5 class="card-title">@Model.Title</h5>
+        <p class="card-text">@Model.Description</p>
+
+        <div class="d-flex justify-content-between mb-2">
+            <span>Questions: @Model.NumberOfQuestions</span>
+            <span class="badge bg-secondary">@Model.DifficultyLevel</span>
+        </div>
+
+        @if (Model.Accessible == Accessibility.Public)
+        {
+            <div class="mb-2">
+                <strong>Game Code:</strong> @Model.GameCode
+            </div>
+        }
+
+        @*kan velge mellom disse to senere utifra hva som er lettest å programmere i backend*@
+        @if(Model.CardType == GameCardType.RecentlyPlayed && Model.Highscore.HasValue)
+        {
+            <div class="mb-2">
+                <strong>Highscore:</strong> @Model.Highscore
+            </div>
+        }
+
+        <div class="d-flex justify-content-between">
+            @if(Model.CardType == GameCardType.MyGames)
+            {
+                <button class="btn btn-secondary">Edit</button>
+            }
+            <button class="btn btn-primary">Play</button>
+        </div>
+    </div>
+</div>

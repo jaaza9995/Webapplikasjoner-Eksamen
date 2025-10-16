@@ -6,6 +6,7 @@ public class Story
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string? DifficultyLevel { get; set; }
+    public Accessibility Accessible { get; set; }
     public string? Code { get; set; }
     public int Played { get; set; }
     public int Finished { get; set; }
