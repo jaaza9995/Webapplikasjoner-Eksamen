@@ -1,34 +1,61 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Jam.Models.Enums; 
-using Jam.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Jam.Models.Enums;
 
 namespace Jam.ViewModels;
 
 public class SceneEditViewModel
 {
-    public int SceneId { get; set; }
-    public int StoryId { get; set; }
-
-    [Required, StringLength(100)]
-    public string Title { get; set; } = string.Empty;
+    [Required]
+    public int SceneId { get; set; }// Unik ID for scenen (brukes ved redigering av eksisterende scene)
 
     [Required]
-    public string Body { get; set; } = string.Empty;
+    public int StoryId { get; set; }// Forteller hvilken Story (historie) scenen tilhører
 
     [Required]
-    public SceneType SceneType { get; set; }   // Intro / Question / Ending
+    public string Title { get; set; } = string.Empty;// Tittel som vises øverst i scenen
+
+    [Required]
+    public SceneType SceneType { get; set; }// Hvilken type scene dette er (Intro, Question, Ending)
+
+    [ValidateNever] 
     public List<SelectListItem> SceneTypeOptions { get; set; } = new();
+    // Liste brukt til dropdown i viewet slik at man kan velge SceneType
+    // ValidateNever = unngår valideringsfeil siden denne lista ikke sendes tilbake fra skjemaet
+
 
     [Required]
-    public DifficultyLevel Level { get; set; } // Easy / Medium / Hard
+    public DifficultyLevel Level { get; set; }// Vanskelighetsgrad (Easy, Medium, Hard)
+
+    [ValidateNever] 
     public List<SelectListItem> LevelOptions { get; set; } = new();
+    // Dropdown-valg for vanskelighetsnivå, bygges i controlleren
 
-    public int? PreviousSceneId { get; set; }
-    public int? NextSceneId { get; set; }
+     // Brukes til å lenke scener sammen i historien
+    public int? PreviousSceneId { get; set; } // ID til scenen som kommer før
+    public int? NextSceneId { get; set; }     // ID til scenen som kommer etter
 
-    // Egne lister til select-feltene i viewet
-    public List<SelectListItem> PreviousSceneOptions { get; set; } = new();
-    public List<SelectListItem> NextSceneOptions { get; set; } = new();
-    
+    [ValidateNever] public List<SelectListItem> PreviousSceneOptions { get; set; } = new();// Dropdown-liste for valg av forrige scene i editoren
+    [ValidateNever] public List<SelectListItem> NextSceneOptions { get; set; } = new();// Dropdown-liste for valg av neste scene i editoren
+
+    // Ulike tekstfelt avhengig av scenetype (controlleren bestemmer hvilket som brukes)
+    public string? IntroText { get; set; }     // Teksten som vises for introduksjonsscene
+    public string? QuestionText { get; set; }  // Spørsmålstekst for spørsmålsscene
+    public string? EndingText { get; set; }    // Tekst som vises for sluttscene
+
+
+    // Kun for spørsmålsscener
+    public List<AnswerOptionEditViewModel> Answers { get; set; } = new();
+}
+
+public class AnswerOptionEditViewModel
+{
+    public int AnswerId { get; set; }// ID for svaret (0 hvis nytt, ellers eksisterende i databasen)
+
+    [Required]
+    public string Text { get; set; } = string.Empty;// Selve svarteksten som vises til spilleren
+
+    [Required]
+    public int? NextSceneId { get; set; } // Hvilken scene man går til hvis dette svaret velges
 }

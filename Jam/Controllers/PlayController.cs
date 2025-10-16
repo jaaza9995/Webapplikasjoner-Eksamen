@@ -46,7 +46,7 @@ namespace Jam.Controllers
 
             if (s == null) return NotFound("Scene ikke funnet.");
 
-            var isQuestion = s.Question != null && (s.Question.AnswerOptions?.Any() ?? false);
+            var Question = s.Question != null && (s.Question.AnswerOptions?.Any() ?? false);
 
             var vm = new PlaySceneViewModel
             {
@@ -54,7 +54,7 @@ namespace Jam.Controllers
                 SceneId    = s.SceneId,
                 SceneText  = s.SceneText ?? string.Empty,
                 SceneType  = s.SceneType.ToString(),
-                IsQuestion = isQuestion,
+                Question = Question,
                 NextSceneId = s.NextSceneId,
                 Answers = (s.Question?.AnswerOptions ?? new List<AnswerOption>())
                     .OrderBy(a => a.AnswerOptionId) // ← endre til riktig PK-navn hvis annet
@@ -102,6 +102,10 @@ namespace Jam.Controllers
                     : RedirectToAction(nameof(Scene), new { sceneId = a.NextSceneId.Value, sessionId });
             }
         [HttpGet]
-        public IActionResult End(int sessionId) => View(model: sessionId);
+        public IActionResult End(int sessionId)
+        {
+            return View(sessionId);
+        }
+  
     }
 }
