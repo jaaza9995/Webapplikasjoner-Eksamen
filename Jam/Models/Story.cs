@@ -5,7 +5,7 @@ namespace Jam.Models;
 public class Story
 {
     public int StoryId { get; set; }
-    public string Title { get; set; } = string.Empty;
+    public string? Title { get; set; }
     public string Description { get; set; } = string.Empty;
     public DifficultyLevel DifficultyLevel { get; set; } // Easy || Medium || Hard
     public Accessibility Accessible { get; set; } // Public || Private

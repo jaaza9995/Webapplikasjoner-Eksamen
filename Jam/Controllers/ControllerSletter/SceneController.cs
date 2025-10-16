@@ -1,4 +1,5 @@
-using Microsoft.AspNetCore.Mvc;
+/*using Microsoft.AspNetCore.Mvc;
+
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Jam.Models.Enums;
 using Jam.ViewModels;
@@ -55,3 +56,4 @@ public class SceneController : Controller
         return View(vm);
     }
 }
+*/

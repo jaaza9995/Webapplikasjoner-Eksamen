@@ -15,3 +15,6 @@ public class PlayingSession
     public int? UserId { get; set; } // Foreign key to User, nullable to allow User deletion without deleting playingsessions
     public User? User { get; set; } = null!; // Navigation property 
 }
+
+
+

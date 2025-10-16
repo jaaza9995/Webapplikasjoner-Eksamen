@@ -6,11 +6,13 @@ namespace Jam.ViewModels
     {
         public int SessionId { get; set; } // ID-en til spilløkten (brukes for å vite hvilken spillerunde det gjelder)
         public int SceneId { get; set; } // ID for scenen som vises akkurat nå
-        public bool Question { get; set; } // Sier om scenen er et spørsmål (true) eller bare tekst (false)
+        public string Question { get; set; } = string.Empty; // Spørsmålet som stilles 
         public string SceneText { get; set; } = string.Empty; // Teksten som vises i scenen (dialog, spørsmål osv.)
         public string SceneType { get; set; } = string.Empty; // Typen scene (f.eks. "Intro", "Question", "Ending")
         public IEnumerable<AnswerOptionViewModel> Answers { get; set; } = Enumerable.Empty<AnswerOptionViewModel>(); // Liste med svaralternativer (brukes hvis scenen er et spørsmål)
         public int? NextSceneId { get; set; } // Neste scene som skal vises (bare brukt hvis det ikke er et spørsmål)
+
+        //public string Feedback { get; set; } = string.Empty; // Tilbakemelding etter å ha svart på et spørsmål (f.eks. "Riktig!" eller "Feil svar.")
     }
 
     // Viser statusen i spillet (score, liv, tittel, vanskelighetsgrad)

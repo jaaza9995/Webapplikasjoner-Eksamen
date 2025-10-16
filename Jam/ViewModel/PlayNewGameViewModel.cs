@@ -1,3 +1,5 @@
+using Jam.Models.Enums; 
+
 namespace Jam.ViewModels
 {
     // Viser alle tilgjengelige spill (public stories) med tittel, beskrivelse og kode
@@ -8,11 +10,13 @@ namespace Jam.ViewModels
     }
 
     // Representerer ett spillkort i listen
-    public class StoryListViewModel
+    public class StoryListViewModel //blir brukt i BrowseController
     {
         public int Id { get; set; }                  // unikt ID-nummer for spillet
-        public string Title { get; set; } =string.Empty;      // tittel på spillet
-        public string Description { get; set; } = string.Empty; // kort beskrivelse
+        public string Title { get; set; } = string.Empty;      // tittel på spillet
+
+        public string Introduction { get; set; } = string.Empty; // kort beskrivelse
         public int QuestionCount { get; set; }       // hvor mange spørsmål historien har
+        public DifficultyLevel Difficulty { get; set; }   // NY
     }
 }

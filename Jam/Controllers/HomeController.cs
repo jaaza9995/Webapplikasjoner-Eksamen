@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-
+//japp
 namespace Jam.Controllers
 {
     // Denne kontrolleren håndterer alt som hører til forsiden og generelle sider i appen

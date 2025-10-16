@@ -1,124 +1,68 @@
 using Microsoft.AspNetCore.Mvc;
-using Jam.Models;
 using Jam.DAL.UserDAL;
+using Jam.DAL.StoryDAL;
 
-namespace Jam.Controllers;
-
-// Håndterer CRUD for brukere via repository-laget (IUserRepository)
-public class UserController : Controller
+namespace Jam.Controllers
 {
-    private readonly IUserRepository _repo; // Tilgang til brukerdata gjennom DAL
-
-    // DI: repository injiseres slik at kontrolleren ikke er avhengig av DbContext direkte
-    public UserController(IUserRepository repo)
+    [ApiController]
+    [Route("api/users")]
+    public class UserController : ControllerBase
     {
-        _repo = repo;
-    }
+        private readonly IUserRepository _users;
+        private readonly IStoryRepository _stories;
 
-    // LISTE: alle brukere
-    [HttpGet]
-    public IActionResult Index()
-    {
-        // NB: IUserRepository har ikke "GetAll" – i et ekte UI ville du laget en dedikert metode.
-        // Midlertidig løsning: vis ingen liste her, eller hent via DbContext om du ønsker.
-        // For å holde oss til repo-kontrakten returnerer vi tomt view nå.
-        return View(new List<User>());
-    }
-
-    // DETALJER: én bruker
-    [HttpGet]
-    public async Task<IActionResult> Details(int id)
-    {
-        var u = await _repo.GetUserById(id);
-        if (u == null) return NotFound("Bruker ikke funnet.");
-        return View(u);
-    }
-
-    // CREATE (GET): vis tomt skjema
-    [HttpGet]
-    public IActionResult Create()
-    {
-        return View(new User());
-    }
-
-    // CREATE (POST): opprett ny bruker
-    [HttpPost]
-    [ValidateAntiForgeryToken] // CSRF-beskyttelse
-    public async Task<IActionResult> Create(User model)
-    {
-        // Enkle server-side valideringer
-        if (!ModelState.IsValid) return View(model);
-
-        // Unik brukernavn?
-        if (await _repo.UsernameExists(model.Username))
+        public UserController(IUserRepository users, IStoryRepository stories)
         {
-            ModelState.AddModelError(nameof(model.Username), "Brukernavnet er allerede i bruk.");
-            return View(model);
+            _users = users;
+            _stories = stories;
         }
 
-        // Unik e-post? (valgfri)
-        if (!string.IsNullOrWhiteSpace(model.Email) && await _repo.UserEmailExists(model.Email))
+        // GET api/users/1  -> enkel brukerprofil
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<object>> GetById([FromRoute] int id)
         {
-            ModelState.AddModelError(nameof(model.Email), "E-postadressen er allerede i bruk.");
-            return View(model);
+            var u = await _users.GetUserById(id);
+            if (u == null) return NotFound(new { error = "Bruker ikke funnet." });
+
+            return Ok(new
+            {
+                u.UserId,
+                name = $"{u.Firstname} {u.Lastname}".Trim(),
+                username = u.Username,
+                email = u.Email
+            });
         }
 
-        // Viktig i ekte app: PasswordHash bør være hash av passord fra et ViewModel (ikke råstreng i modellen).
-        await _repo.CreateUser(model);
-        return RedirectToAction(nameof(Index));
-    }
-
-    // EDIT (GET): vis redigeringsskjema
-    [HttpGet]
-    public async Task<IActionResult> Edit(int id)
-    {
-        var u = await _repo.GetUserById(id);
-        if (u == null) return NotFound("Bruker ikke funnet.");
-        return View(u);
-    }
-
-    // EDIT (POST): oppdater bruker
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(User model)
-    {
-        if (!ModelState.IsValid) return View(model);
-
-        var existing = await _repo.GetUserById(model.UserId);
-        if (existing == null) return NotFound("Bruker ikke funnet.");
-
-        // Sjekk unikhet kun hvis feltet er endret
-        if (!string.Equals(existing.Username, model.Username, StringComparison.Ordinal) &&
-            await _repo.UsernameExists(model.Username))
+        // GET api/users/1/stats -> teller egne spill
+        [HttpGet("{id:int}/stats")]
+        public async Task<ActionResult<object>> GetStats([FromRoute] int id)
         {
-            ModelState.AddModelError(nameof(model.Username), "Brukernavnet er allerede i bruk.");
-            return View(model);
+            var u = await _users.GetUserById(id);
+            if (u == null) return NotFound(new { error = "Bruker ikke funnet." });
+
+            var mine = await _stories.GetStoriesByUserId(id);
+            return Ok(new { userId = id, myGamesCount = mine.Count() });
         }
 
-        if (!string.Equals(existing.Email ?? "", model.Email ?? "", StringComparison.OrdinalIgnoreCase) &&
-            !string.IsNullOrWhiteSpace(model.Email) &&
-            await _repo.UserEmailExists(model.Email))
+        // GET api/users/1/stories -> list opp brukerens stories (samme dataform som i /api/me/stories)
+        [HttpGet("{id:int}/stories")]
+        public async Task<ActionResult<IEnumerable<object>>> GetUserStories([FromRoute] int id)
         {
-            ModelState.AddModelError(nameof(model.Email), "E-postadressen er allerede i bruk.");
-            return View(model);
+            var list = await _stories.GetStoriesByUserId(id);
+            var result = list.Select(s => new
+            {
+                storyId = s.StoryId,
+                title = s.Title,
+                description = s.Description,
+                difficulty = s.DifficultyLevel.ToString(),
+                editTargets = new
+                {
+                    story = $"/api/create/story/{s.StoryId}",
+                    summary = $"/api/create/{s.StoryId}/summary"
+                }
+            });
+
+            return Ok(result);
         }
-
-        // NB: I en ekte løsning bør passord endres via egen “Change Password”-flyt.
-        await _repo.UpdateUser(model);
-        return RedirectToAction(nameof(Details), new { id = model.UserId });
-    }
-
-    // DELETE (POST): slett bruker
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var u = await _repo.GetUserById(id);
-        if (u == null) return NotFound("Bruker ikke funnet.");
-
-        var ok = await _repo.DeleteUser(id);
-        if (!ok) return BadRequest("Kunne ikke slette brukeren.");
-
-        return RedirectToAction(nameof(Index));
     }
 }

@@ -7,7 +7,7 @@ public class AnswerOption
     public string Answer { get; set; } = string.Empty;
     public string SceneText { get; set; } = string.Empty;
     public bool IsCorrect { get; set; }
-    //public string? Feedback { get; set; }
+
     public int QuestionId { get; set; }
     public Question Question { get; set; } = null!; // Navigation property
 }
