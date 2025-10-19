@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+/*using Microsoft.AspNetCore.Mvc;
 using Jam.DAL.StoryDAL;
 using Jam.DAL.SceneDAL;
 using Jam.ViewModels;
@@ -136,3 +136,4 @@ namespace Jam.Controllers
         public int UserId { get; set; } = 1; // placeholder til dere kobler på ekte auth
     }
 }
+*/
