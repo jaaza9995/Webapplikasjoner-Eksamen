@@ -1,0 +1,29 @@
+@model Scene
+
+<h2>Make New Game</h2>
+
+<form asp-action="StoryDescription">
+<h3>Game Details:</h3>
+    <div class="form-group">
+        <label asp-for="Title"></label><span class="text-danger">*</span>
+        <input asp-for="Title" class="form-control" placeholder="Write your game title here..." />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Description"></label>
+        <input asp-for="Description" class="form-control" placeholder="Describe your game here..." />
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+        <div class="form-group">
+        <label asp-for="Difficulty"></label>
+        <input asp-for="DifficultyLevel" class="form-control" />
+        <span asp-validation-for="DifficultyLevel" class="text-danger"></span>
+    </div>
+        <div class="form-group">
+        <label asp-for="Intro"></label>
+        <input asp-for="Intro" class="form-control" placeholder="Write your intro to the story  " />
+        <span asp-validation-for="Intro" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Next</button>
+    <a asp-action="index" class="btn btn-secondary">Back to home</a>
+</form>
