@@ -1,0 +1,38 @@
+@model List<Jam.ViewModels.GameCardViewModel>
+
+@{
+    ViewData["Title"] = "Browse page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Explore New Games!</h1>
+</div>
+
+@* search engine for public games*@
+<form method="post" asp-action="Search" asp-controller="Browse">
+    <input type="text" name="searchString" placeholder="Search for a game.." class="form-control" />
+    <button type="submit" class="btn btn-primary mt-2">Search</button>
+</form>
+
+@* block for adding private games by entering game code*@
+<div class="card mb-3" style="width: 18rem;">
+    <div class="card-body">
+        <h5 class="card-title">For private games add game code here to access</h5>
+
+        <div class="d-flex justify-content-between mb-2">
+            <form method="post" asp-action="Search" asp-controller="Browse">
+            <input type="text" name="searchPrivate" placeholder="Private Game Code.." class="form-control" />
+            <button type="submit" class="btn btn-primary mt-2">Add</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* for displaying public games after searching*@
+<div class="d-flex flex-wrap gap-3">
+@foreach (var story in Model)
+{
+    <partial name="_GameCard" model="story" />
+}
+</div>
+

@@ -18,6 +18,10 @@ build_property.GenerateRazorMetadataSourceChecksumAttributes =
 build_property.MSBuildProjectDirectory = /Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam
 build_property._RazorSourceGeneratorDebug = 
 
+[/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/Browse/Browse.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQnJvd3NlL0Jyb3dzZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/Home/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9DcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
