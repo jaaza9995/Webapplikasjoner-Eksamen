@@ -9,7 +9,7 @@ using Jam.DAL.QuestionDAL;
 using Jam.Models.Enums;
 
 
-namespace MyShop.Controllers;
+namespace Jam.Controllers;
 
 public class CreateGameController : Controller
 {
