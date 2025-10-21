@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "VXbl5PJEXkIyKSp641z+Q1n4eYayQvLGiVam4Iiuvtc=",
+  "Hash": "5Z5QTcAAOH4QWH+Jdy2QKx3TgxBRQTCmWswgkeoy2Gs=",
   "Source": "Jam",
   "BasePath": "_content/Jam",
   "Mode": "Default",
@@ -16,6 +16,44 @@
     }
   ],
   "Assets": [
+    {
+      "Identity": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/obj/Debug/net8.0/scopedcss/bundle/Jam.styles.css",
+      "SourceId": "Jam",
+      "SourceType": "Computed",
+      "ContentRoot": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/obj/Debug/net8.0/scopedcss/bundle/",
+      "BasePath": "_content/Jam",
+      "RelativePath": "Jam.styles.css",
+      "AssetKind": "All",
+      "AssetMode": "CurrentProject",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "ScopedCss",
+      "AssetTraitValue": "ApplicationBundle",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/obj/Debug/net8.0/scopedcss/bundle/Jam.styles.css"
+    },
+    {
+      "Identity": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/obj/Debug/net8.0/scopedcss/projectbundle/Jam.bundle.scp.css",
+      "SourceId": "Jam",
+      "SourceType": "Computed",
+      "ContentRoot": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/obj/Debug/net8.0/scopedcss/projectbundle/",
+      "BasePath": "_content/Jam",
+      "RelativePath": "Jam.bundle.scp.css",
+      "AssetKind": "All",
+      "AssetMode": "Reference",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "ScopedCss",
+      "AssetTraitValue": "ProjectBundle",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/obj/Debug/net8.0/scopedcss/projectbundle/Jam.bundle.scp.css"
+    },
     {
       "Identity": "/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/wwwroot/js/bootstrap.js",
       "SourceId": "Jam",

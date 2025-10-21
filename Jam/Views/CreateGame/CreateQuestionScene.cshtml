@@ -76,8 +76,8 @@
         {
             <a class="btn btn-primary"
                asp-action="CreateEndings"
-               asp-route-storyId="@Model.StoryId"
-               asp-route-previousSceneId="@(Model.PreviousSceneId ?? 0)">
+               asp-route-storyId="StoryId"
+               asp-route-previousSceneId="(PreviousSceneId ?? 0)">
                 End game
             </a>
         }
