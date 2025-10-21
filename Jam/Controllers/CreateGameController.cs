@@ -1,38 +1,30 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc;
 using Jam.ViewModels;
-using Jam.Models;
-using Jam.DAL.SceneDAL;
+using Jam.Models;              // <-- viktig
 using Jam.DAL.StoryDAL;
 using Jam.DAL.AnswerOptionDAL;
 using Jam.DAL.QuestionDAL;
-using Jam.Models.Enums;
-
+using Jam.Models.Enums;     // <-- viktig
 
 namespace Jam.Controllers;
 
 public class CreateGameController : Controller
 {
     private readonly IStoryRepository _stories;
-    private readonly ISceneRepository _scenes;
     private readonly IQuestionRepository _questions;
     private readonly IAnswerOptionRepository _answers;
-    //private readonly ILogger<CreateGameController> _logger;
 
     public CreateGameController(
         IAnswerOptionRepository answerOptionRepository,
         IQuestionRepository questionRepository,
-        IStoryRepository storiesRepository,
-        ISceneRepository scenesRepository)
-        //ILogger<CreateGameController> logger)
+        IStoryRepository storiesRepository)
     {
         _answers = answerOptionRepository;
         _questions = questionRepository;
         _stories = storiesRepository;
-        _scenes = scenesRepository;
-
-
     }
+
     [HttpGet]
     public IActionResult CreateStoryAndIntro()
     {
@@ -40,20 +32,11 @@ public class CreateGameController : Controller
         {
             DifficultyLevelOptions = Enum.GetValues(typeof(DifficultyLevel))
                 .Cast<DifficultyLevel>()
-                .Select(d => new SelectListItem
-                {
-                    Value = d.ToString(),     // evt: ((int)d).ToString()
-                    Text  = d.ToString()      // evt: "Easy"/"Medium"/"Hard" på norsk
-                })
+                .Select(d => new SelectListItem { Value = d.ToString(), Text = d.ToString() })
                 .ToList(),
-
             AccessibilityOptions = Enum.GetValues(typeof(Accessibility))
                 .Cast<Accessibility>()
-                .Select(a => new SelectListItem
-                {
-                    Value = a.ToString(),     // evt: ((int)a).ToString()
-                    Text  = a.ToString()      // f.eks. "Public"/"Private"
-                })
+                .Select(a => new SelectListItem { Value = a.ToString(), Text = a.ToString() })
                 .ToList()
         };
 
@@ -62,34 +45,70 @@ public class CreateGameController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult CreateStoryAndIntro(CreateStoryAndIntroViewModel vm)
+    public async Task<IActionResult> CreateStoryAndIntro(CreateStoryAndIntroViewModel vm)
+    {
+        if (!ModelState.IsValid)
         {
-            if (!ModelState.IsValid)
-            {
-                // Viktig: repopuler listene ved valideringsfeil (akkurat som i MyShop)
-                vm.DifficultyLevelOptions = Enum.GetValues(typeof(DifficultyLevel))
-                    .Cast<DifficultyLevel>()
-                    .Select(d => new SelectListItem { Value = d.ToString(), Text = d.ToString() })
-                    .ToList();
+            // repopuler dropdowns ved valideringsfeil
+            vm.DifficultyLevelOptions = Enum.GetValues(typeof(DifficultyLevel))
+                .Cast<DifficultyLevel>()
+                .Select(d => new SelectListItem { Value = d.ToString(), Text = d.ToString() })
+                .ToList();
+            vm.AccessibilityOptions = Enum.GetValues(typeof(Accessibility))
+                .Cast<Accessibility>()
+                .Select(a => new SelectListItem { Value = a.ToString(), Text = a.ToString() })
+                .ToList();
 
-                vm.AccessibilityOptions = Enum.GetValues(typeof(Accessibility))
-                    .Cast<Accessibility>()
-                    .Select(a => new SelectListItem { Value = a.ToString(), Text = a.ToString() })
-                    .ToList();
-
-                return View(vm);
+            return View(vm);
             }
 
-            // TODO: lagre story + intro, så gå videre
-            return RedirectToAction(nameof(CreateScene), new { /* storyId = ... */ });
-    }
+            // 1) Lagre selve Story (kun StoryRepository)
+            var game = new Story
+            {
+                Title           = vm.Title ?? "",
+                Description     = vm.Description ?? "",      // se NOTE om IntroText under
+                DifficultyLevel = vm.DifficultyLevel,
+                Accessible      = vm.Accessibility
+                // Code settes senere hvis du bytter til Private i UpdateStory,
+                // eller generer her hvis du vil.
+            };
 
-    [HttpGet]
-    public IActionResult CreateScene(int storyId) {
-        return View();
-    }
-    }
+        await _stories.CreateStory(game); // CreateStory: Task (void). EF setter StoryId på 'story'.
 
+        // 2) (Valgfritt) Håndter IntroText
+        // A) Enkelt: legg introen i Description, eller
+        // B) Legg til en egen kolonne Story.IntroText og lagre vm.IntroText der, eller
+        // C) Lag første "intro-spørsmål" senere — men IKKE bruk PlayingSession her.
+
+        // 3) Videre til spørsmåls-siden
+        return RedirectToAction(nameof(CreateQuestion), new
+        {
+            gameId = game.StoryId,
+            questionIndex = 1
+        });
+        [HttpGet]
+        IActionResult CreateQuestion(int storyId, int questionIndex = 1)
+        {
+            var vm = new CreateQuestionSceneViewModel
+            {
+                StoryId = storyId,
+                PreviousSceneId = null, // første spørsmål har ingen forrige scene
+                QuestionsMade = questionIndex - 1 // antall spørsmål laget så langt
+            };
+
+            return View(vm);
+        }
+
+}
+
+     
+
+   
+     
+
+    // Neste side i flyten (vis spørsmåls-skjema)
+    
+}
 
 
     /*
