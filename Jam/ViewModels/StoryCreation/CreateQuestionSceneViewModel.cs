@@ -49,7 +49,8 @@ public class CreateMultipleQuestionScenesViewModel
     public int StoryId { get; set; }
     public int? PreviousSceneId { get; set; }
 
-    public List<CreateQuestionSceneViewModel> QuestionScenes { get; set; } = new()
+    public List<CreateQuestionSceneViewModel> Questions { get; set; } = new()
+    
     {
         new() // start med én boks
     };
