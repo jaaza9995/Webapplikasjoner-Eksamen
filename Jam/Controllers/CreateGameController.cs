@@ -1,80 +1,206 @@
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc;
-using Jam.DAL.StoryDAL;
-using Jam.DAL.SceneDAL;
-using Jam.Models;
-using Jam.Models.Enums;
 using Jam.ViewModels;
+using Jam.Models;
+using Jam.DAL.SceneDAL;
+using Jam.DAL.StoryDAL;
+using Jam.DAL.AnswerOptionDAL;
+using Jam.DAL.QuestionDAL;
+using Jam.Models.Enums;
 
-namespace Jam.Controllers
+
+namespace MyShop.Controllers;
+
+public class CreateGameController : Controller
 {
-    // Forfatter-flyt: opprett Story + Intro, så videre til spørsmål
-    public class CreateGameController : Controller
+    private readonly IStoryRepository _stories;
+    private readonly ISceneRepository _scenes;
+    private readonly IQuestionRepository _questions;
+    private readonly IAnswerOptionRepository _answers;
+    //private readonly ILogger<CreateGameController> _logger;
+
+    public CreateGameController(
+        IAnswerOptionRepository answerOptionRepository,
+        IQuestionRepository questionRepository,
+        IStoryRepository storiesRepository,
+        ISceneRepository scenesRepository)
+        //ILogger<CreateGameController> logger)
     {
-        private readonly IStoryRepository _stories;
-        private readonly ISceneRepository _scenes;
+        _answers = answerOptionRepository;
+        _questions = questionRepository;
+        _stories = storiesRepository;
+        _scenes = scenesRepository;
 
-        public CreateGameController(IStoryRepository stories, ISceneRepository scenes)
+
+    }
+    [HttpGet]
+    public IActionResult CreateStoryAndIntro()
+    {
+        var vm = new CreateStoryAndIntroViewModel
         {
-            _stories = stories;
-            _scenes = scenes;
-        }
+            DifficultyLevelOptions = Enum.GetValues(typeof(DifficultyLevel))
+                .Cast<DifficultyLevel>()
+                .Select(d => new SelectListItem
+                {
+                    Value = d.ToString(),     // evt: ((int)d).ToString()
+                    Text  = d.ToString()      // evt: "Easy"/"Medium"/"Hard" på norsk
+                })
+                .ToList(),
 
-        // GET: /StoryCreation/CreateStoryAndIntro
-        [HttpGet]
-        public IActionResult CreateStoryAndIntro()
-        {
-            return View(new CreateStoryAndIntroViewModel());
-        }
+            AccessibilityOptions = Enum.GetValues(typeof(Accessibility))
+                .Cast<Accessibility>()
+                .Select(a => new SelectListItem
+                {
+                    Value = a.ToString(),     // evt: ((int)a).ToString()
+                    Text  = a.ToString()      // f.eks. "Public"/"Private"
+                })
+                .ToList()
+        };
 
-        // POST: /StoryCreation/CreateStoryAndIntro
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateStoryAndIntro(CreateStoryAndIntroViewModel model)
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult CreateStoryAndIntro(CreateStoryAndIntroViewModel vm)
         {
             if (!ModelState.IsValid)
             {
-                return View(model);
+                // Viktig: repopuler listene ved valideringsfeil (akkurat som i MyShop)
+                vm.DifficultyLevelOptions = Enum.GetValues(typeof(DifficultyLevel))
+                    .Cast<DifficultyLevel>()
+                    .Select(d => new SelectListItem { Value = d.ToString(), Text = d.ToString() })
+                    .ToList();
+
+                vm.AccessibilityOptions = Enum.GetValues(typeof(Accessibility))
+                    .Cast<Accessibility>()
+                    .Select(a => new SelectListItem { Value = a.ToString(), Text = a.ToString() })
+                    .ToList();
+
+                return View(vm);
             }
 
-            // Midlertidig "innlogget" bruker (Barry i DBInit)
-            int userId = 1;
+            // TODO: lagre story + intro, så gå videre
+            return RedirectToAction(nameof(CreateScene), new { /* storyId = ... */ });
+    }
 
-            // 1) Lagre selve historien
-            var story = new Story
-            {
-                Title = model.Title,
-                Description = model.Description,
-                DifficultyLevel = model.DifficultyLevel,
-                Accessible = Accessibility.Public, // kan endres senere i editing
-                UserId = userId
-            };
-            await _stories.CreateStory(story); // setter StoryId
+    [HttpGet]
+    public IActionResult CreateScene(int storyId) {
+        return View();
+    }
+    }
 
-            // 2) Lagre intro-scene
-            var intro = new Scene
-            {
-                SceneType = SceneType.Introduction,
-                SceneText = model.IntroText,
-                StoryId = story.StoryId
-            };
-            await _scenes.CreateScene(intro, previousSceneId: null); // setter SceneId
 
-            // 3) Neste steg: gå til "CreateQuestionScene" (du har viewet)
-            //    Sender med storyId + previousSceneId (intro) så vi kan lenke videre
-            return RedirectToAction("CreateQuestionScene", "CreateGame",
-                new { storyId = story.StoryId, previousSceneId = intro.SceneId });
-            }
 
-            // (Valgfritt) Stub for neste steg – så routing ikke feiler hvis du ikke har action enda
-            [HttpGet]
-            public IActionResult CreateQuestionScene(int storyId, int previousSceneId)
-            {
-                // Returner ditt eksisterende view (du har CreateQuestionScene.cshtml)
-                // Her kan du senere fylle en VM med storyId/previousSceneId
-                ViewBag.StoryId = storyId;
-                ViewBag.Previous = previousSceneId;
-                return View();
-            }
+    /*
+
+    public async Task<IActionResult> Table()
+    {
+        var items = await GetPlayingSessionById.GetAll();
+        if (items == null)
+        {
+            _logger.LogError("[ItemController] Item list not found while executing _itemRepository.GetAll()");
+            return NotFound("Item list not found");
         }
-    } 
+        var itemsViewModel = new ItemsViewModel(items, "Table");
+        return View(itemsViewModel);
+    }
 
+    public async Task<IActionResult> Grid()
+    {
+        var items = await _itemRepository.GetAll();
+        if (items == null)
+        {
+            _logger.LogError("[ItemController] Item list not found while executing _itemRepository.GetAll()");
+            return NotFound("Item list not found");
+        }
+        var itemsViewModel = new ItemsViewModel(items, "Grid");
+        return View(itemsViewModel);
+    }
+
+    public async Task<IActionResult> Details(int id)
+    {
+        var item = await _itemRepository.GetItemById(id);
+        if (item == null)
+        {
+            _logger.LogError("[ItemController] Item not found for the ItemId {ItemId:0000}", id);
+            return NotFound("Item not found for the ItemId");
+        }
+        return View(item);
+    }
+
+    [HttpGet]
+    [Authorize]
+    public IActionResult Create()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [Authorize]
+    public async Task<IActionResult> Create(Item item)
+    {
+        if (ModelState.IsValid)
+        {
+            bool returnOk = await _itemRepository.Create(item);
+            if (returnOk)
+                return RedirectToAction(nameof(Table));
+        }
+        _logger.LogWarning("[ItemController] Item creation failed {@item}", item);
+        return View(item);
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> Update(int id)
+    {
+        var item = await _itemRepository.GetItemById(id);
+        if (item == null)
+        {
+            _logger.LogError("[ItemController] Item not found when updating the ItemId {ItemId:0000}", id);
+            return BadRequest("Item not found for the ItemId");
+        }
+        return View(item);
+    }
+
+    [HttpPost]
+    [Authorize]
+    public async Task<IActionResult> Update(Item item)
+    {
+        if (ModelState.IsValid)
+        {
+            bool returnOk = await _itemRepository.Update(item);
+            if (returnOk)
+                return RedirectToAction(nameof(Table));
+        }
+        _logger.LogWarning("[ItemController] Item update failed {@item}", item);
+        return View(item);
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var item = await _itemRepository.GetItemById(id);
+        if (item == null)
+        {
+            _logger.LogError("[ItemController] Item not found for the ItemId {ItemId:0000}", id);
+            return BadRequest("Item not found for the ItemId");
+        }
+        return View(item);
+    }
+
+    [HttpPost]
+    [Authorize]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        bool returnOk = await _itemRepository.Delete(id);
+        if (!returnOk)
+        {
+            _logger.LogError("[ItemController] Item deletion failed for the ItemId {ItemId:0000}", id);
+            return BadRequest("Item deletion failed");
+        }
+        return RedirectToAction(nameof(Table));
+    }
+}
+*/

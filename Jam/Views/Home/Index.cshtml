@@ -1,15 +1,76 @@
-@*@{
+@{
     ViewData["Title"] = "Home Page";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome to Math Universe!</h1>
-    <form asp-controller="Story" asp-action="Create" method="get">
-    <button type="submit" class="btn btn-primary">Make New Game</button>
-    </form>
-    <form asp-controller="Story" asp-action="AddNewGame" method="get">
-    <button type="submit" class="btn btn-primary">Make New Game</button>
-    </form>
-</div>
-*@
+    <h1 class="display-4">Welcome back @ViewBag.FirstName!</h1>
 
+ <div class="d-flex gap-3 justify-content-center mt-4">
+    <!-- Lag nytt spill (forfatterflyt) -->
+    <a class="btn btn-success btn-lg"
+       asp-controller="CreateGame"
+       asp-action="CreateStoryAndIntro">
+        Make New Game
+    </a>
+
+    <!-- Gå til Explore-siden for å legge til nytt spill (public søk + privat kode) -->
+    <a class="btn btn-primary btn-lg"
+       asp-controller="Browse"
+       asp-action="Index">
+        Add New Game
+    </a>
+</div>
+
+    <hr class="my-5" />
+
+    <!-- Your Games -->
+    <h4>Your Games:</h4>
+    <div class="row g-4 justify-content-center">
+        @foreach (var story in ViewBag.YourGames)
+        {
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 p-3">
+                    <h5>@story.Title</h5>
+                    <p class="text-muted">@story.Description</p>
+                    <p><strong>Game Code:</strong> @story.Code</p>
+                    <div class="d-flex justify-content-between">
+                        <a asp-controller="StoryEditing" asp-action="Edit" asp-route-storyId="@story.StoryId"
+                           class="btn btn-outline-primary btn-sm">Edit</a>
+                        <a asp-controller="StoryPlaying" asp-action="StartStory" asp-route-storyId="@story.StoryId"
+                           class="btn btn-success btn-sm">Play</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <hr class="my-5" />
+
+    <!-- Recently Played -->
+    <h4>Recently Played:</h4>
+    <div class="row g-4 justify-content-center">
+        @foreach (var story in ViewBag.RecentlyPlayed)
+        {
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 p-3">
+                    <h5>@story.Title</h5>
+                    <p class="text-muted">@story.Description</p>
+                    <p><strong>Game Code:</strong> @story.Code</p>
+                    <a asp-controller="StoryPlaying" asp-action="StartStory" asp-route-storyId="@story.StoryId"
+                       class="btn btn-success btn-sm w-100">Play</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .btn-pink {
+        background-color: hotpink;
+        color: white;
+        border: none;
+    }
+    .btn-pink:hover {
+        background-color: deeppink;
+    }
+</style>

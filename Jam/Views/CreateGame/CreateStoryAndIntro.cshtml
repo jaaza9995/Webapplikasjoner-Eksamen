@@ -1,0 +1,60 @@
+@model Jam.ViewModels.CreateStoryAndIntroViewModel
+
+@{
+    ViewData["Title"] = "Make New Game";
+}
+
+<h2 class="text-center my-3">Make New Game:</h2>
+
+<form asp-action="CreateStoryAndIntro" method="post" class="container" novalidate>
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <!-- Game details -->
+    <div class="p-3 rounded-3 shadow-sm mb-4" style="background:#f1fff1">
+        <h5 class="mb-3">Game Details:</h5>
+
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label">Title:</label>
+            <input asp-for="Title" class="form-control" placeholder="Write game title here..." />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label">Description:</label>
+            <textarea asp-for="Description" rows="4" class="form-control"
+                      placeholder="Describe your game here..."></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <div class="mb-2">
+            <label asp-for="DifficultyLevel" class="form-label me-2">Difficulty:</label>
+            <select asp-for="DifficultyLevel"
+                    class="form-select"
+                    asp-items="Html.GetEnumSelectList<Jam.Models.Enums.DifficultyLevel>()">
+            </select>
+            <span asp-validation-for="DifficultyLevel" class="text-danger"></span>
+        </div>
+
+       <div class="mb-2">
+            <label asp-for="Accessibility" class="form-label me-2">Accessibility:</label>
+            <select asp-for="Accessibility"
+                    class="form-select"
+                    asp-items="Html.GetEnumSelectList<Jam.Models.Enums.Accessibility>()">
+            </select>
+            <span asp-validation-for="DifficultyLevel" class="text-danger"></span>
+    </div>
+
+    <!-- Intro -->
+    <div class="p-3 rounded-3 shadow-sm mb-4" style="background:#eefdfc">
+        <h5 class="mb-3">Intro</h5>
+        <textarea asp-for="IntroText" rows="6" class="form-control"
+                  placeholder="Write your intro to the story"></textarea>
+        <span asp-validation-for="IntroText" class="text-danger"></span>
+    </div>
+
+    <div class="text-center">
+        <button type="submit" class="btn btn-dark btn-lg">Next ➜</button>
+    </div>
+</form>
+

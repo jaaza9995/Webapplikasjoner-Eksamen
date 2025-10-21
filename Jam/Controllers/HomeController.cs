@@ -18,7 +18,7 @@ namespace Jam.Controllers
 
         public async Task<IActionResult> Index()
         {
-            int userId = 1; // midlertidig "innlogget" bruker (Barry Allen i DBInit)
+            int userId = 1; // midlertidig "innlogget" bruker
 
             var user = await _users.GetUserById(userId);
             var yourGames = await _stories.GetStoriesByUserId(userId);

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+/*using Microsoft.AspNetCore.Mvc;
 using Jam.DAL.UserDAL;
 using Jam.DAL.StoryDAL;
 using Jam.Models.Enums;
@@ -70,3 +70,4 @@ namespace Jam.Controllers
         }
     }
 }
+*/

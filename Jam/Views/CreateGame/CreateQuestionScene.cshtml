@@ -1,0 +1,126 @@
+@model Jam.ViewModels.CreateQuestionSceneViewModel
+@using Jam.Models
+@using Jam.Models.Enums
+@{
+    ViewData["Title"] = "Add questions";
+    var saved = (IEnumerable<Scene>)(ViewBag.Saved ?? Enumerable.Empty<Scene>());
+}
+
+<h2 class="mb-3">Add questions</h2>
+
+@if (TempData["NeedMore"] is string warn)
+{
+    <div class="alert alert-warning">@warn</div>
+}
+
+<form asp-action="CreateQuestionScene" method="post" class="mb-4">
+    <input type="hidden" asp-for="StoryId" />
+    <input type="hidden" asp-for="PreviousSceneId" />
+    <input type="hidden" asp-for="QuestionsMade" />
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Story context</h5>
+            <textarea asp-for="StoryText" class="form-control" rows="3" placeholder="Set the scene..."></textarea>
+            <span asp-validation-for="StoryText" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Question</h5>
+            <input asp-for="QuestionText" class="form-control" placeholder="Write your question..." />
+            <span asp-validation-for="QuestionText" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Answer options (4)</h5>
+
+            @for (var i = 0; i < Model.Answers.Count; i++)
+            {
+                <div class="border rounded p-2 mb-3">
+                    <div class="row g-2">
+                        <div class="col-md-8">
+                            <label class="form-label">Answer @(i + 1)</label>
+                            <input asp-for="Answers[i].AnswerText" class="form-control" />
+                            <span asp-validation-for="Answers[i].AnswerText" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="form-check">
+                                <input asp-for="Answers[i].IsCorrect" class="form-check-input" type="checkbox" />
+                                <label class="form-check-label" asp-for="Answers[i].IsCorrect">Is correct?</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <label class="form-label">Context for this answer</label>
+                        <input asp-for="Answers[i].ContextText" class="form-control" placeholder="Follow-up text shown after this choice..." />
+                        <span asp-validation-for="Answers[i].ContextText" class="text-danger"></span>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <!-- Next question: lagrer i DB og åpner tomt skjema lenket videre -->
+        <button type="submit" class="btn btn-secondary">
+            Next question
+        </button>
+
+        <!-- End game: tilgjengelig først etter >= 3 spørsmål -->
+        @if ((Model?.QuestionsMade ?? 0) >= 3)
+
+        {
+            <a class="btn btn-primary"
+               asp-action="CreateEndings"
+               asp-route-storyId="@Model.StoryId"
+               asp-route-previousSceneId="@(Model.PreviousSceneId ?? 0)">
+                End game
+            </a>
+        }
+    </div>
+</form>
+
+<hr />
+
+<!-- Lagrede spørsmål (Read/Update/Delete) -->
+@if (saved.Any())
+{
+    <h5>Saved questions (@saved.Count())</h5>
+    <div class="list-group mb-4">
+        @{
+            int? prevId = null;
+        }
+        @foreach (var sc in saved)
+        {
+            <div class="list-group-item d-flex justify-content-between align-items-start">
+                <div class="me-3">
+                    <div><strong>Scene #@sc.SceneId</strong></div>
+                    <div class="text-muted">@sc.SceneText</div>
+                </div>
+                <div class="d-flex gap-2">
+                    <!-- Edit -->
+                    <a class="btn btn-sm btn-outline-primary"
+                       asp-action="EditQuestionScene"
+                       asp-route-sceneId="@sc.SceneId">
+                        Edit
+                    </a>
+
+                    <!-- Delete: sender inn previousSceneId = forrige question-scene i rekkefølge -->
+                    <form asp-action="DeleteSavedQuestion" method="post" class="mb-0">
+                        <input type="hidden" name="storyId" value="@sc.StoryId" />
+                        <input type="hidden" name="sceneId" value="@sc.SceneId" />
+                        <input type="hidden" name="previousSceneId" value="@(prevId ?? 0)" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+            prevId = sc.SceneId;
+        }
+    </div>
+}
+
+@*@section Scripts { <partial name="_ValidationScriptsPartial" /> }*@

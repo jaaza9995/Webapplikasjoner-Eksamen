@@ -1,0 +1,63 @@
+@using Jam.Models.Enums;
+@model StoryEditOverviewViewModel
+
+<h2>Edit Story: @Model.Title</h2>
+
+<form asp-action="UpdateStory" method="post">
+    <input type="hidden" name="StoryId" value="@Model.StoryId" />
+
+    <div>
+        <label>Title</label>
+        <input type="text" name="Title" value="@Model.Title" class="form-control" />
+    </div>
+
+    <div>
+        <label>Description</label>
+        <textarea name="Description" class="form-control">@Model.Description</textarea>
+    </div>
+
+    <div>
+        <label>Difficulty level</label>
+        <select name="DifficultyLevel" class="form-control">
+            <option value="Easy" selected="@((Model.DifficultyLevel == DifficultyLevel.Easy))">Easy</option>
+            <option value="Medium" selected="@((Model.DifficultyLevel == DifficultyLevel.Medium))">Medium</option>
+            <option value="Hard" selected="@((Model.DifficultyLevel == DifficultyLevel.Hard))">Hard</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Accessibility</label>
+        <select name="Accessibility" class="form-control">
+            <option value="Public" selected="@((Model.Accessibility == Accessibility.Public))">Public</option>
+            <option value="Private" selected="@((Model.Accessibility == Accessibility.Private))">Private</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>
+
+<hr />
+
+<h3>Scenes</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Scene Type</th>
+            <th>Text</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var scene in Model.Scenes)
+        {
+            <tr>
+                <td>@scene.SceneType</td>
+                <td>@scene.SceneText</td>
+                <td>
+                    <a asp-action="EditScene" asp-route-sceneId="@scene.SceneId">Edit</a> |
+                    <a asp-action="DeleteScene" asp-route-sceneId="@scene.SceneId">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

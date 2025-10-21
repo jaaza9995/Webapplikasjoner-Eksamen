@@ -1,176 +1,183 @@
-using Microsoft.AspNetCore.Mvc;
+/*using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Jam.DAL.StoryDAL;
 using Jam.DAL.SceneDAL;
-using Jam.DAL.PlayingSessionDAL;
+using Jam.DAL.QuestionDAL;
 using Jam.DAL.AnswerOptionDAL;
-using Jam.ViewModels;
+using Jam.DAL.PlayingSessionDAL;
+using Jam.Models;
 using Jam.Models.Enums;
 
 namespace Jam.Controllers
 {
-    // ÉN kontroller som håndterer både Views og API
-    // Viktig: IKKE [ApiController] på klassen når vi også skal returnere View()
+    // Styrer spillflyten: start -> scene -> svar -> slutt
     public class PlayController : Controller
     {
+        private readonly IStoryRepository _stories;
         private readonly ISceneRepository _scenes;
-        private readonly IPlayingSessionRepository _sessions;
+        private readonly IQuestionRepository _questions;
         private readonly IAnswerOptionRepository _answers;
+        private readonly IPlayingSessionRepository _sessions;
+        private readonly ILogger<PlayController> _logger;
 
         public PlayController(
+            IStoryRepository stories,
             ISceneRepository scenes,
+            IQuestionRepository questions,
+            IAnswerOptionRepository answers,
             IPlayingSessionRepository sessions,
-            IAnswerOptionRepository answers)
+            ILogger<PlayController> logger)
         {
+            _stories = stories;
             _scenes = scenes;
-            _sessions = sessions;
+            _questions = questions;
             _answers = answers;
+            _sessions = sessions;
+            _logger = logger;
         }
 
-        // ---------- VIEWS ----------
-        // GET /Play
-        [HttpGet("/Play")]
-        public IActionResult Index() => View("~/Views/Play/Index.cshtml");
-
-        // GET /Play/Scene
-        [HttpGet("/Play/Scene")]
-        public IActionResult Scene() => View("~/Views/Play/Scene.cshtml");
-
-        // ---------- API ----------
-        // POST /api/play/start/public
-        [HttpPost("/api/play/start/public")]
-        public async Task<ActionResult<object>> StartPublic([FromBody] StartPublicRequest dto)
+        // --------------------------- START (OFFENTLIG) ---------------------------
+        // Start et offentlig spill via storyId (f.eks. fra Browse-siden).
+        [HttpPost]
+        public async Task<IActionResult> StartPublic(int storyId, int userId = 1)
         {
-            if (dto.StoryId <= 0) return BadRequest(new { error = "Ugyldig storyId." });
+            var story = await _stories.GetPublicStoryById(storyId);
+            if (story == null) return BadRequest("Ugyldig storyId.");
 
-            var session = await _sessions.CreatePlayingSession(dto.UserId, dto.StoryId);
-            return Ok(new { sessionId = session.PlayingSessionId });
+            // Opprett ny spilløkt og bump 'Played/Dnf'
+            var session = await _sessions.CreatePlayingSession(userId, storyId);
+            await _stories.IncrementPlayed(storyId);
+
+            // Gå til første scene
+            return RedirectToAction(nameof(Scene), new { sessionId = session.PlayingSessionId });
         }
 
-        // GET /api/play/scene/{sessionId}
-        [HttpGet("/api/play/scene/{sessionId:int}")]
-        public async Task<ActionResult<object>> GetScene([FromRoute] int sessionId)
+        // --------------------------- START (PRIVAT) ------------------------------
+        // Start et privat spill via kode (f.eks. fra 'Enter code').
+        [HttpPost]
+        public async Task<IActionResult> StartByCode(string code, int userId = 1)
+        {
+            if (string.IsNullOrWhiteSpace(code)) return BadRequest("Kode mangler.");
+
+            var story = await _stories.GetPrivateStoryByCode(code);
+            if (story == null) return BadRequest("Ugyldig kode.");
+
+            var session = await _sessions.CreatePlayingSession(userId, story.StoryId);
+            await _stories.IncrementPlayed(story.StoryId);
+
+            return RedirectToAction(nameof(Scene), new { sessionId = session.PlayingSessionId });
+        }
+
+        // --------------------------- VISE SCENE ---------------------------------
+        // Viser gjeldende scene i økten (Intro eller Question).
+        [HttpGet]
+        public async Task<IActionResult> Scene(int sessionId)
         {
             var session = await _sessions.GetPlayingSessionById(sessionId);
-            if (session == null) return NotFound(new { error = "Økt ikke funnet." });
-            if (session.CurrentSceneId == null)
-                return Ok(new { type = "ended", score = session.Score, level = session.CurrentLevel });
+            if (session == null || session.CurrentSceneId == null) return NotFound("Økt/scene ikke funnet.");
 
+            // Hent scene inkl. Question + AnswerOptions
             var scene = await _scenes.GetSceneWithDetailsById(session.CurrentSceneId.Value);
-            if (scene == null) return NotFound(new { error = "Scene ikke funnet." });
+            if (scene == null) return NotFound("Scene ikke funnet.");
 
-            var max = session.CurrentLevel == 3 ? 4 : session.CurrentLevel == 2 ? 3 : 2;
-            var answers = scene.Question?.AnswerOptions?
-                .OrderBy(a => a.AnswerOptionId)
-                .Take(max)
-                .Select(a => new AnswerOptionViewModel { AnswerId = a.AnswerOptionId, Text = a.Answer })
-                .ToList() ?? new List<AnswerOptionViewModel>();
-
-            var vm = new PlaySceneViewModel
+            // Når SceneType == Question -> PlayScene.cshtml viser Question + AnswerOptions
+            // Når SceneType == Introduction -> samme view kan vise kun SceneText + 'Neste'
+            // (Du har PlayScene.cshtml og StartStory.cshtml; begge kan peke hit hvis ønskelig)
+            var vm = new ViewModels.PlaySceneViewModel
             {
                 SessionId = sessionId,
                 SceneId = scene.SceneId,
-                SceneText = scene.SceneText,
                 SceneType = scene.SceneType.ToString(),
+                SceneText = scene.SceneText,
                 Question = scene.Question?.QuestionText ?? string.Empty,
-                NextSceneId = scene.NextSceneId,
-                Answers = answers
+                Answers = scene.Question?.AnswerOptions?.Select(ao => new ViewModels.PlaySceneViewModel.AnswerVM
+                {
+                    AnswerOptionId = ao.AnswerOptionId,
+                    Text = ao.Answer
+                }).ToList() ?? new()
             };
 
-            return Ok(new
-            {
-                type = scene.SceneType.ToString(),
-                level = session.CurrentLevel,
-                score = session.Score,
-                payload = vm
-            });
+            return View("PlayScene", vm);
         }
 
-        // POST /api/play/next
-        [HttpPost("/api/play/next")]
-        public async Task<ActionResult<object>> Next([FromBody] NextRequest dto)
+        // --------------------------- SVAR PÅ SPØRSMÅL ---------------------------
+        // Tar imot valgt svar, oppdaterer score/level, og går videre til neste scene eller slutt.
+        [HttpPost]
+        public async Task<IActionResult> Answer(int sessionId, int answerOptionId)
         {
-            var session = await _sessions.GetPlayingSessionById(dto.SessionId);
-            if (session == null) return NotFound(new { error = "Økt ikke funnet." });
+            var session = await _sessions.GetPlayingSessionById(sessionId);
+            if (session == null || session.CurrentSceneId == null) return NotFound("Økt/scene ikke funnet.");
 
-            if (dto.NextSceneId == null)
-            {
-                await _sessions.FinishSession(dto.SessionId, session.Score, session.CurrentLevel);
-                return Ok(new { ended = true, score = session.Score, level = session.CurrentLevel });
-            }
+            // Finn valgt svar + nåværende scene & neste scene
+            var chosen = await _answers.GetAnswerOptionById(answerOptionId);
+            if (chosen == null) return BadRequest("Ugyldig svarvalg.");
 
-            await _sessions.MoveToNextScene(dto.SessionId, dto.NextSceneId.Value);
-            return Ok(new { moved = true });
-        }
+            var currentScene = await _scenes.GetSceneById(session.CurrentSceneId.Value);
+            if (currentScene == null) return NotFound("Scene ikke funnet.");
 
-        // POST /api/play/answer
-        [HttpPost("/api/play/answer")]
-        public async Task<ActionResult<object>> Answer([FromBody] AnswerRequest dto)
-        {
-            var session = await _sessions.GetPlayingSessionById(dto.SessionId);
-            if (session == null) return NotFound(new { error = "Økt ikke funnet." });
-
-            var answer = await _answers.GetAnswerOptionById(dto.AnswerId);
-            if (answer == null) return NotFound(new { error = "Svar ikke funnet." });
-
-            bool correct = answer.IsCorrect;
-            int add = 0;
-            int newLevel = session.CurrentLevel;
-
-            if (correct)
-            {
-                add = newLevel == 3 ? 10 : newLevel == 2 ? 5 : 2;
-                if (newLevel == 2) newLevel = 3;
-                else if (newLevel == 1) newLevel = 2;
-            }
-            else
-            {
-                if (newLevel == 1)
-                {
-                    await _sessions.FinishSession(dto.SessionId, session.Score, newLevel);
-                    return Ok(new
-                    {
-                        ended = true,
-                        gameOver = true,
-                        score = session.Score,
-                        level = newLevel,
-                        feedback = string.IsNullOrWhiteSpace(answer.SceneText) ? "Game over." : answer.SceneText
-                    });
-                }
-                newLevel--;
-            }
-
+            // Poeng: +10 ved korrekt, ellers 0 (enkelt og tydelig)
+            var add = chosen.IsCorrect ? 10 : 0;
             var newScore = session.Score + add;
 
-            await _sessions.AnswerQuestion(dto.SessionId, session.CurrentSceneId ?? 0, newScore, newLevel);
+            // Level: enkel indikator (du kan skru det av/på senere)
+            var newLevel = session.CurrentLevel;
 
-            return Ok(new
+            // Neste scene (Question -> Question), eller null hvis slutt på spørsmål
+            var next = await _scenes.GetNextScene(currentScene.SceneId);
+
+            if (next == null)
             {
-                ended = false,
-                correct,
-                addedPoints = add,
-                score = newScore,
-                level = newLevel,
-                feedback = string.IsNullOrWhiteSpace(answer.SceneText)
-                    ? (correct ? "Riktig!" : "Feil.")
-                    : answer.SceneText,
-                nextSceneId = answer.NextSceneId
-            });
+                // Ingen flere Question-scener -> finn riktig ending for brukerens score
+                var ending = await _scenes.GetEndingSceneForStory(session.StoryId, session.UserId ?? 0);
+                if (ending == null)
+                {
+                    // Fallback hvis ending mangler: avslutt total score og send til FinishStory
+                    await _sessions.FinishSession(sessionId, newScore, newLevel);
+                    return RedirectToAction(nameof(End), new { sessionId });
+                }
+
+                // Gå til ending-scenen
+                await _sessions.AnswerQuestion(sessionId, ending.SceneId, newScore, newLevel);
+                return RedirectToAction(nameof(End), new { sessionId });
+            }
+
+            // Fortsett til neste Question-scene
+            await _sessions.AnswerQuestion(sessionId, next.SceneId, newScore, newLevel);
+            return RedirectToAction(nameof(Scene), new { sessionId });
         }
 
-        // POST /api/play/finish
-        [HttpPost("/api/play/finish")]
-        public async Task<ActionResult<object>> Finish([FromBody] FinishRequest dto)
+        // --------------------------- SLUTT --------------------------------------
+        // Viser slutt/ending. Oppdaterer også Story-statistikk.
+        [HttpGet]
+        public async Task<IActionResult> End(int sessionId)
         {
-            var session = await _sessions.GetPlayingSessionById(dto.SessionId);
-            if (session == null) return NotFound(new { error = "Økt ikke funnet." });
+            var session = await _sessions.GetPlayingSessionById(sessionId);
+            if (session == null) return NotFound("Økt ikke funnet.");
 
-            await _sessions.FinishSession(dto.SessionId, session.Score, session.CurrentLevel);
-            return Ok(new { ended = true, score = session.Score, level = session.CurrentLevel });
+            // Hent ending basert på score%
+            var ending = await _scenes.GetEndingSceneForStory(session.StoryId, session.UserId ?? 0);
+            if (ending == null)
+            {
+                // Ingen ending definert -> avslutt likevel
+                await _sessions.FinishSession(sessionId, session.Score, session.CurrentLevel);
+                return View("FinishStory", session);
+            }
+
+            // Oppdater story-statistikk basert på ending-type
+            if (ending.SceneType == SceneType.EndingGood)
+                await _stories.IncrementFinished(session.StoryId);
+            else if (ending.SceneType == SceneType.EndingBad)
+                await _stories.IncrementFailed(session.StoryId);
+            else
+                await _stories.IncrementFinished(session.StoryId); // nøytral teller som gjennomført
+
+            // Sett slutt-tid og lås økten
+            await _sessions.FinishSession(sessionId, session.Score, session.CurrentLevel);
+
+            // Du har FinishStory.cshtml – den kan få alt den trenger via session + ending-tekst
+            ViewBag.EndingText = ending.SceneText;
+            return View("FinishStory", session);
         }
     }
-
-    // DTOs (uendret)
-    public class StartPublicRequest { public int StoryId { get; set; } public int UserId { get; set; } = 1; }
-    public class NextRequest { public int SessionId { get; set; } public int? NextSceneId { get; set; } }
-    public class AnswerRequest { public int SessionId { get; set; } public int AnswerId { get; set; } }
-    public class FinishRequest { public int SessionId { get; set; } }
 }
+*/
