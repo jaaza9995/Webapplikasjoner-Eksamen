@@ -9,6 +9,7 @@ namespace Jam.ViewModels
         public int StoryId { get; set; }
         public string Title { get; set; } = "";
         public string Description { get; set; } = "";
+        public string Intro { get; set; } = "";
         public string DifficultyLevel { get; set; } = "";
         public string Accessibility { get; set; } = "";
 
@@ -40,8 +41,10 @@ namespace Jam.ViewModels
 
     public class CreateQuestionViewModel
     {
+        public int QuestionId { get; set; }
         public string QuestionText { get; set; } = "";
         public List<string> Answers { get; set; } = new() { "", "", "", "" };
         public List<string> Feedbacks { get; set; } = new() { "", "", "", "" };
+        public List<bool> IsCorrect { get; set; } = new() { false, false, false, false };
     }
 }

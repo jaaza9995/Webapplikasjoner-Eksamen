@@ -1,55 +1,38 @@
-@model Story
+@model Jam.ViewModels.CreateStoryViewModel
 
-<h2>Create New Item</h2>
+<h2>Create New Story</h2>
 
-<form asp-action="Create">
-    <div class="form-group">
-        <label asp-for="Title"></label><span class="text-danger">*</span>
-        <input asp-for="Title" class="form-control" />
-        <span asp-validation-for="Title" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Description"></label>
-        <input asp-for="Description" class="form-control" />
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
- 
-    <hr />
+<form asp-action="Create" method="post">
+    <input type="hidden" asp-for="Step" />
 
-    <h4>Questions</h4>
-    <div id="questionsContainer">
-        <div class="question-box mb-3">
-            <label>Question:</label>
-            <input type="text" name="Questions[0].Text" class="form-control" placeholder="Write your question" />
-
-            <label>Answer:</label>
-            <input type="text" name="Questions[0].Answer" class="form-control" placeholder="Write the correct answer" />
-        </div>
+    <div>
+        @if (Model.Step == 1)
+        {
+            <partial name="Partials/_CreateDetails" model="Model" />
+        }
+        else if (Model.Step == 2)
+        {
+            <partial name="Partials/_CreateQuestions" model="Model" />
+        }
+        else if (Model.Step == 3)
+        {
+            <partial name="Partials/_CreateEndings" model="Model" />
+        }
     </div>
 
-    <button type="button" id="addQuestionBtn" class="btn btn-success mt-2">Add Question</button>
-    <button type="submit" class="btn btn-primary mt-2">Save Story</button>
-    <a asp-action="Table" class="btn btn-secondary mt-2">Back to Home</a>
+    <div class="mt-3 d-flex justify-content-between">
+        @if (Model.Step > 1)
+        {
+            <button type="submit" name="action" value="Back" class="btn btn-secondary">Back</button>
+        }
+
+        @if (Model.Step < 3)
+        {
+            <button type="submit" name="action" value="Next" class="btn btn-primary">Next</button>
+        }
+        else
+        {
+            <button type="submit" name="action" value="Finish" class="btn btn-success">Finish Game</button>
+        }
+    </div>
 </form>
-
-<script>
-    let questionIndex = 1;
-
-    document.getElementById("addQuestionBtn").addEventListener("click", function () {
-        const container = document.getElementById("questionsContainer");
-
-        const newQuestion = document.createElement("div");
-        newQuestion.classList.add("question-box", "mb-3");
-
-        newQuestion.innerHTML = `
-            <label>Question:</label>
-            <input type="text" name="Questions[${questionIndex}].Text" class="form-control" placeholder="Write your question" />
-
-            <label>Answer:</label>
-            <input type="text" name="Questions[${questionIndex}].Answer" class="form-control" placeholder="Write the correct answer" />
-        `;
-
-        container.appendChild(newQuestion);
-        questionIndex++;
-    });
-</script>
