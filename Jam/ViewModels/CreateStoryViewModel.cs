@@ -48,3 +48,6 @@ namespace Jam.ViewModels
         public List<bool> IsCorrect { get; set; } = new() { false, false, false, false };
     }
 }
+
+// public List<SelectListItem> DifficultyLevelOptions { get; set; } = new(); //verdien som blit valgt for vanskelighetsgrad
+// public List<SelectListItem> AccessibilityOptions { get; set; } = new();//Verdien som blit valgt for tilgjengelighetsvalg

@@ -15,6 +15,7 @@ public class Question
     public string? HelpingText { get; set; }
 
     public int SceneId { get; set; }
+    AnswerOption AnswerOption { get; set; } = null!; // Navigation property
 
     public Scene? Scene { get; set;} // navigational property
 }
