@@ -1,0 +1,44 @@
+@model Jam.ViewModels.EditStoryViewModel
+
+<h4>Story Details</h4>
+
+<div class="form-group">
+    <label asp-for="Title">Title</label><span class="text-danger">*</span>
+    <input asp-for="Title" class="form-control" placeholder="Write your game title here..." />
+    <span asp-validation-for="Title" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Description">Description</label><span class="text-danger">*</span>
+    <textarea asp-for="Description" class="form-control" rows="3" placeholder="Describe your game here..."></textarea>
+    <span asp-validation-for="Description" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Intro">Intro</label><span class="text-danger">*</span>
+    <textarea asp-for="Intro" class="form-control" rows="3" placeholder="Write game intro here..."></textarea>
+    <span asp-validation-for="Intro" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="DifficultyLevel">Difficulty</label><span class="text-danger">*</span>
+    <select asp-for="DifficultyLevel" asp-items="Model.DifficultyOptions" class="form-control">
+        <option value="">Select difficulty</option>
+    </select>
+    <span asp-validation-for="DifficultyLevel" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Accessibility">Privacy</label><span class="text-danger">*</span>
+    <select asp-for="Accessibility" asp-items="Model.AccessibilityOptions" class="form-control">
+        <option value="">Select privacy</option>
+    </select>
+    <span asp-validation-for="Accessibility" class="text-danger"></span>
+</div>
+
+@if (Model.IsEditMode)
+{
+    <form asp-action="DeleteStory" asp-route-id="@Model.StoryId" method="post" onsubmit="return confirm('Are you sure you want to delete your game ' + @Model.Title + "?");" class="mt-2">
+        <button type="submit" class="btn btn-danger">Delete Game</button>
+    </form>
+}

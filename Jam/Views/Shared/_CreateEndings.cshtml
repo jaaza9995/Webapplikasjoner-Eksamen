@@ -1,0 +1,17 @@
+@model Jam.ViewModels.CreateStoryViewModel
+
+<h4>Story Endings</h4>
+
+<div class="form-group">
+    <label asp-for="HighEnding"></label> <span class="text-danger">*</span>
+    <textarea asp-for="HighEnding" class="form-control" rows="3" placeholder="Write an ending for the gamers with high scores.."></textarea>
+    <span asp-validation-for="HighEnding" class="text-danger"></span>
+</div>
+<div class="form-group">
+    <label asp-for="MediumEnding"></label> <span class="text-danger">*</span>
+    <textarea asp-for="MediumEnding" class="form-control" rows="3" placeholder="Write an ending for the gamers with medium scores.."></textarea>
+</div>
+<div class="form-group">
+    <label asp-for="LowEnding"></label>
+    <textarea asp-for="LowEnding" class="form-control" rows="3" placeholder="Write an ending for the gamers with low scores.."></textarea>
+</div>

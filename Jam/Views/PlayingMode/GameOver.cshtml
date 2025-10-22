@@ -1,0 +1,12 @@
+@model Jam.ViewModels.PlayResultViewModel
+
+<div class="container mt-5 text-center">
+    <h2>Game Over</h2>
+    <p>You have no lives remaining!</p>
+
+    <div class="card shadow p-4 mb-4">
+        <p>@Model.LowEnding</p>
+    </div>
+
+    <partial name="_ScorePanel" model="Model" />
+</div>

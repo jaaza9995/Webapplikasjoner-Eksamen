@@ -1,0 +1,16 @@
+@model Jam.ViewModels.PlayResultViewModel
+
+<div class="container mt-5 text-center">
+    <h2>Congratulations!</h2>
+
+    <div class="card shadow p-4 mb-4">
+        @{
+            string endingText = Model.Score >= Model.HighScoreThreshold
+                                ? Model.HighEnding
+                                : Model.MediumEnding;
+        }
+        <p>@endingText</p>
+    </div>
+
+    <partial name="_ScorePanel" model="Model" />
+</div>

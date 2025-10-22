@@ -1,0 +1,15 @@
+@model Jam.ViewModels.PlayResultViewModel
+
+<div class="mt-4 text-center">
+    <h5>Score: @Model.Score</h5>
+    <h5>Highscore: @Model.Highscore</h5>
+
+    <div class="mt-3 d-flex justify-content-center gap-2">
+        <form asp-action="PlayAgain" method="post">
+            <input type="hidden" name="storyId" value="@Model.StoryId" />
+            <button type="submit" class="btn btn-success">Play Again</button>
+        </form>
+
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Return to Home</a>
+    </div>
+</div>
