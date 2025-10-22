@@ -9,71 +9,71 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = Jam
 build_property.RootNamespace = Jam
-build_property.ProjectDir = /Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/
+build_property.ProjectDir = /Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = /Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam
+build_property.MSBuildProjectDirectory = /Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam
 build_property._RazorSourceGeneratorDebug = 
 
-[/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/Browse/Browse.cshtml]
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Browse/Browse.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQnJvd3NlL0Jyb3dzZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/Home/Create.cshtml]
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Home/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9DcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/Home/Index.cshtml]
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9JbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/PlayingMode/Finished.cshtml]
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/PlayingMode/Finished.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGxheWluZ01vZGUvRmluaXNoZWQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/PlayingMode/GameOver.cshtml]
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/PlayingMode/GameOver.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGxheWluZ01vZGUvR2FtZU92ZXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/PlayingMode/Play.cshtml]
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/PlayingMode/Play.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGxheWluZ01vZGUvUGxheS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/Shared/_CreateDetails.cshtml]
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Shared/_CreateDetails.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19DcmVhdGVEZXRhaWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/Shared/_CreateEndings.cshtml]
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Shared/_CreateEndings.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19DcmVhdGVFbmRpbmdzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/Shared/_CreateQuestions.cshtml]
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Shared/_CreateQuestions.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19DcmVhdGVRdWVzdGlvbnMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/Shared/_GameCard.cshtml]
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Shared/_GameCard.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19HYW1lQ2FyZC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/Shared/_Layout.cshtml]
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/Shared/_LoginPartial.cshtml]
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Shared/_LoginPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19Mb2dpblBhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/Shared/_ScorePanel.cshtml]
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Shared/_ScorePanel.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19TY29yZVBhbmVsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/_ViewImports.cshtml]
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/siggy/Desktop/skole/Webapplikasjoner/Webapplikasjoner-Eksamen/Jam/Views/_ViewStart.cshtml]
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
