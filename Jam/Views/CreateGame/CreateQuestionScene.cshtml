@@ -1,280 +1,77 @@
-@model Jam.ViewModels.CreateQuestionSceneViewModel
- @model Jam.ViewModels.CreateMultipleQuestionScenesViewModel
+@model Jam.ViewModels.CreateMultipleQuestionScenesViewModel
+
 @{
     ViewData["Title"] = "Add questions";
-    var idx = (int?)ViewData["QuestionIndex"] ?? 1;
+    bool canEnd = (Model?.Questions?.Count ?? 0) >= 3;
 }
 
-<h2 class="mb-3">Add questions (@idx)</h2>
+@Html.ValidationSummary(false, "", new { @class = "text-danger" })
 
-@if (TempData["NeedMore"] is string warn)
-{
-    <div class="alert alert-warning">@warn</div>
-}
-
-<form asp-action="CreateQuestion" method="post" class="mb-4">
+<form asp-controller="CreateGame" asp-action="CreateQuestions" method="post" novalidate>
     @Html.AntiForgeryToken()
 
     <input type="hidden" asp-for="StoryId" />
-    <input type="hidden" asp-for="AddAnother" id="AddAnother" />
-    <input type="hidden" name="questionIndex" value="@idx" />
+    <input type="hidden" asp-for="PreviousSceneId" />
 
-    <div class="card shadow-sm mb-3">
-        <div class="card-body">
-            <h5 class="card-title">Question</h5>
-            <input asp-for="QuestionText" class="form-control" placeholder="Write your question..." />
-            <span asp-validation-for="QuestionText" class="text-danger"></span>
-        </div>
-    </div>
+    @for (var q = 0; q < Model.Questions.Count; q++)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Add Question @(q + 1):</h5>
 
-    <div class="card shadow-sm mb-3">
-        <div class="card-body">
-            <h5 class="card-title">Answer options (4)</h5>
-
-            @for (var i = 0; i < Model.Answers.Count; i++)
-            {
-                <div class="border rounded p-2 mb-3">
-                    <div class="row g-2">
-                        <div class="col-md-8">
-                            <label class="form-label">Answer @(i + 1)</label>
-                            <input asp-for="Answers[i].AnswerText" class="form-control" />
-                            <span asp-validation-for="Answers[i].AnswerText" class="text-danger"></span>
-                        </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <div class="form-check">
-                                <input asp-for="Answers[i].IsCorrect" class="form-check-input" type="checkbox" />
-                                <label class="form-check-label" asp-for="Answers[i].IsCorrect">Correct?</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Valgfritt felt for feedback/konsekvens-tekst pr. svar -->
-                    <div class="mt-2">
-                        <label class="form-label">Context for this answer (optional)</label>
-                        <input asp-for="Answers[i].ContextText" class="form-control" placeholder="Follow-up text shown after this choice..." />
-                        <span asp-validation-for="Answers[i].ContextText" class="text-danger"></span>
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label">Story context:</label>
+                    <input asp-for="Questions[q].StoryText" class="form-control" placeholder="Set the scene with some context..." />
+                    <span asp-validation-for="Questions[q].StoryText" class="text-danger"></span>
                 </div>
-            }
-        </div>
-    </div>
 
-    <div class="d-flex gap-2">
-        <!-- Lagre og åpne nytt spørsmål -->
-        <button type="submit"
-                class="btn btn-secondary"
-                onclick="document.getElementById('AddAnother').value='true'">
-             Add another
-        </button>
-
-        <!-- Lagre og gå videre (til endings eller neste steg) -->
-        <button type="submit"
-                class="btn btn-success"
-                onclick="document.getElementById('AddAnother').value='false'">
-            Save & continue
-        </button>
-        @model Jam.ViewModels.CreateQuestionsBatchViewModel
-@{
-    ViewData["Title"] = "Add questions";
-}
-
-<h2 class="mb-3">Add questions</h2>
-
-<form asp-action="CreateQuestion" method="post">
-    @Html.AntiForgeryToken()
-    <input type="hidden" asp-for="StoryId" />
-
-    <div id="questions-container">
-        @for (var qi = 0; qi < Model.Questions.Count; qi++)
-        {
-            <div class="question-card card shadow-sm mb-3" data-index="@qi">
-                <div class="card-body">
-                    <h5 class="card-title">Question @(qi + 1)</h5>
-
-                    <input asp-for="Questions[qi].QuestionText" class="form-control mb-2" placeholder="Write your question..." />
-                    <span asp-validation-for="Questions[qi].QuestionText" class="text-danger"></span>
-
-                    <h6 class="mt-3">Answer options (4)</h6>
-                    @for (var ai = 0; ai < Model.Questions[qi].Answers.Count; ai++)
-                    {
-                        <div class="border rounded p-2 mb-2">
-                            <label>Answer @(ai + 1)</label>
-                            <input asp-for="Questions[qi].Answers[ai].AnswerText" class="form-control" />
-                            <span asp-validation-for="Questions[qi].Answers[ai].AnswerText" class="text-danger"></span>
-
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" asp-for="Questions[qi].Answers[ai].IsCorrect" />
-                                <label class="form-check-label" asp-for="Questions[qi].Answers[ai].IsCorrect">Correct?</label>
-                            </div>
-
-                            <input asp-for="Questions[qi].Answers[ai].ContextText" class="form-control mt-2" placeholder="Follow-up text (optional)..." />
-                        </div>
-                    }
+                <div class="mb-3">
+                    <label class="form-label">Question:</label>
+                    <input asp-for="Questions[q].QuestionText" class="form-control" placeholder="Write your question..." />
+                    <span asp-validation-for="Questions[q].QuestionText" class="text-danger"></span>
                 </div>
-            </div>
-        }
-    </div>
 
-    <div class="d-flex gap-2">
-        <button type="button" class="btn btn-secondary" id="add-question-btn">Add question</button>
-        <button type="submit" class="btn btn-success">Continue</button>
-        <a class="btn btn-outline-secondary" asp-action="CreateEndings" asp-route-storyId="@Model.StoryId">Skip to endings</a>
-    </div>
-</form>
-
-<!-- Hidden template for new question -->
-<div id="question-template" class="d-none">
-    <div class="question-card card shadow-sm mb-3" data-index="__idx__">
-        <div class="card-body">
-            <h5 class="card-title">Question __num__</h5>
-
-            <input name="Questions[__idx__].QuestionText" class="form-control mb-2" placeholder="Write your question..." />
-            <span class="text-danger" data-valmsg-for="Questions[__idx__].QuestionText"></span>
-
-            <h6 class="mt-3">Answer options (4)</h6>
-            @for (var ai = 0; ai < 4; ai++)
-            {
-                <div class="border rounded p-2 mb-2">
-                    <label>Answer @(ai + 1)</label>
-                    <input name="Questions[__idx__].Answers[@ai].AnswerText" class="form-control" />
-                    <div class="form-check mt-2">
-                        <input class="form-check-input" type="checkbox" name="Questions[__idx__].Answers[@ai].IsCorrect" value="true" />
-                        <input type="hidden" name="Questions[__idx__].Answers[@ai].IsCorrect" value="false" />
-                        <label class="form-check-label">Correct?</label>
-                    </div>
-                    <input name="Questions[__idx__].Answers[@ai].ContextText" class="form-control mt-2" placeholder="Follow-up text (optional)..." />
-                </div>
-            }
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-    <script>
-        (function () {
-            const container = document.getElementById('questions-container');
-            const tmpl = document.getElementById('question-template').innerHTML;
-            const addBtn = document.getElementById('add-question-btn');
-
-            function addQuestionCard() {
-                const nextIdx = container.querySelectorAll('.question-card').length;
-                let html = tmpl.replaceAll('__idx__', nextIdx).replaceAll('__num__', nextIdx + 1);
-                const div = document.createElement('div');
-                div.innerHTML = html;
-                container.appendChild(div.firstElementChild);
-            }
-
-            addBtn.addEventListener('click', addQuestionCard);
-        })();
-       
-        @{
-            ViewData["Title"] = "Add questions";
-        }
-
-        <h2 class="mb-3">Add questions</h2>
-
-        <form asp-action="CreateQuestion" method="post">
-            @Html.AntiForgeryToken()
-            <input type="hidden" asp-for="StoryId" />
-
-            <div id="questions-container">
-                @for (var qi = 0; qi < Model.Questions.Count; qi++)
+                <h6 class="mt-3">Answer Options:</h6>
+                @for (var i = 0; i < Model.Questions[q].Answers.Count; i++)
                 {
-                    <div class="question-card card shadow-sm mb-3" data-index="@qi">
-                        <div class="card-body">
-                            <h5 class="card-title">Question @(qi + 1)</h5>
-
-                            <input asp-for="Questions[qi].QuestionText" class="form-control mb-2" placeholder="Write your question..." />
-                            <span asp-validation-for="Questions[qi].QuestionText" class="text-danger"></span>
-
-                            <h6 class="mt-3">Answer options (4)</h6>
-                            @for (var ai = 0; ai < Model.Questions[qi].Answers.Count; ai++)
-                            {
-                                <div class="border rounded p-2 mb-2">
-                                    <label>Answer @(ai + 1)</label>
-                                    <input asp-for="Questions[qi].Answers[ai].AnswerText" class="form-control" />
-                                    <span asp-validation-for="Questions[qi].Answers[ai].AnswerText" class="text-danger"></span>
-
-                                    <div class="form-check mt-2">
-                                        <input class="form-check-input" asp-for="Questions[qi].Answers[ai].IsCorrect" />
-                                        <label class="form-check-label" asp-for="Questions[qi].Answers[ai].IsCorrect">Correct?</label>
-                                    </div>
-
-                                    <input asp-for="Questions[qi].Answers[ai].ContextText" class="form-control mt-2" placeholder="Follow-up text (optional)..." />
+                    <div class="border rounded p-2 mb-3">
+                        <div class="row g-2">
+                            <div class="col-md-8">
+                                <label class="form-label">Option @(i + 1)</label>
+                                <input asp-for="Questions[q].Answers[i].AnswerText" class="form-control" />
+                                <span asp-validation-for="Questions[q].Answers[i].AnswerText" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <div class="form-check">
+                                    <input asp-for="Questions[q].Answers[i].IsCorrect" class="form-check-input" type="checkbox" />
+                                    <label class="form-check-label" asp-for="Questions[q].Answers[i].IsCorrect">Correct?</label>
                                 </div>
-                            }
+                            </div>
+                        </div>
+
+                        <div class="mt-2">
+                            <label class="form-label">Context to this answer</label>
+                            <input asp-for="Questions[q].Answers[i].ContextText" class="form-control" placeholder="Follow-up text..." />
+                            <span asp-validation-for="Questions[q].Answers[i].ContextText" class="text-danger"></span>
                         </div>
                     </div>
                 }
             </div>
-
-            <div class="d-flex gap-2">
-                <button type="button" class="btn btn-secondary" id="add-question-btn">Add question</button>
-                <button type="submit" class="btn btn-success">Continue</button>
-                <a class="btn btn-outline-secondary" asp-action="CreateEndings" asp-route-storyId="@Model.StoryId">Skip to endings</a>
-            </div>
-        </form>
-
-        <!-- Hidden template for new question -->
-        <div id="question-template" class="d-none">
-            <div class="question-card card shadow-sm mb-3" data-index="__idx__">
-                <div class="card-body">
-                    <h5 class="card-title">Question __num__</h5>
-
-                    <input name="Questions[__idx__].QuestionText" class="form-control mb-2" placeholder="Write your question..." />
-                    <span class="text-danger" data-valmsg-for="Questions[__idx__].QuestionText"></span>
-
-                    <h6 class="mt-3">Answer options (4)</h6>
-                    @for (var ai = 0; ai < 4; ai++)
-                    {
-                        <div class="border rounded p-2 mb-2">
-                            <label>Answer @(ai + 1)</label>
-                            <input name="Questions[__idx__].Answers[@ai].AnswerText" class="form-control" />
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="checkbox" name="Questions[__idx__].Answers[@ai].IsCorrect" value="true" />
-                                <input type="hidden" name="Questions[__idx__].Answers[@ai].IsCorrect" value="false" />
-                                <label class="form-check-label">Correct?</label>
-                            </div>
-                            <input name="Questions[__idx__].Answers[@ai].ContextText" class="form-control mt-2" placeholder="Follow-up text (optional)..." />
-                        </div>
-                    }
-                </div>
-            </div>
         </div>
+    }
 
-        @section Scripts {
-            <script>
-                (function () {
-                    const container = document.getElementById('questions-container');
-                    const tmpl = document.getElementById('question-template').innerHTML;
-                    const addBtn = document.getElementById('add-question-btn');
+    <div class="d-flex gap-2 align-items-center">
+        <button type="submit" name="submit" value="AddQuestion" class="btn btn-secondary">
+            Add question
+        </button>
 
-                    function addQuestionCard() {
-                        const nextIdx = container.querySelectorAll('.question-card').length;
-                        let html = tmpl.replaceAll('__idx__', nextIdx).replaceAll('__num__', nextIdx + 1);
-                        const div = document.createElement('div');
-                        div.innerHTML = html;
-                        container.appendChild(div.firstElementChild);
-                    }
+        <button type="submit" name="submit" value="SaveAndAddEnding" class="btn btn-success" @(canEnd ? "" : "disabled")>
+            Save & add ending
+        </button>
 
-                    addBtn.addEventListener('click', addQuestionCard);
-                })();
-            </script>
-            <partial name="_ValidationScriptsPartial" />
-        }
-
-}
-
-        <!-- End game: synlig etter >= 3 spørsmål -->
-        @if (idx >= 3)
+        @if (!canEnd)
         {
-            <a class="btn btn-primary ms-auto"
-               asp-action="CreateEndings"
-               asp-route-storyId="@Model.StoryId">
-                End game
-            </a>
+            <span class="text-muted ms-2">Minst 3 spørsmål før du kan gå videre.</span>
         }
     </div>
 </form>
-
-
