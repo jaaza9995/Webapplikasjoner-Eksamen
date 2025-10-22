@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Jam.DAL.StoryDAL;
 using Jam.DAL.UserDAL;
 using Jam.ViewModels;
+using Jam.Models.Enums;
 
 
 namespace Jam.Controllers
@@ -30,8 +31,8 @@ namespace Jam.Controllers
                 DifficultyOptions = s.DifficultyLevel.ToString(),
                 Accessible = s.Accessible,
                 NumberOfQuestions = s.QuestionScenes?.Count ?? 0,
-                GameCode = s.Code ?? "",
-                CardType = Jam.Models.Enums.GameCardType.BrowseMode
+                GameCode = s.GameCode ?? "",
+                CardType = GameCardType.MyGames
             }).ToList();
 
             ViewBag.FirstName = user?.Firstname ?? "Player";

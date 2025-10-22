@@ -4,26 +4,31 @@ using Jam.ViewModels;
 using Jam.Models;    
 using Jam.DAL.StoryDAL;
 using Jam.DAL.AnswerOptionDAL;
-using Jam.Models.Enums;     
+using Jam.Models.Enums;
 using Jam.DAL;
+using Jam.DAL.SceneDAL;
 
 namespace Jam.Controllers;
 
 public class CreateGameController : Controller
 {
     private readonly IStoryRepository _stories;
+    private readonly ISceneRepository _scenes;
     private readonly IAnswerOptionRepository _answers;
     private readonly StoryDbContext _db;
 
     public CreateGameController(
         IAnswerOptionRepository answerOptionRepository,
         IStoryRepository storiesRepository,
+        ISceneRepository sceneRepository,
         StoryDbContext db)
     {
         _answers = answerOptionRepository;
         _stories = storiesRepository;
+        _scenes = sceneRepository;
         _db = db;
     }
+
 
     [HttpGet]
     public IActionResult CreateIntro()
@@ -39,7 +44,7 @@ public class CreateGameController : Controller
                 .Select(a => new SelectListItem { Value = a.ToString(), Text = a.ToString() })
                 .ToList()
         };
-        return View(CreateIntroVM);        
+        return View("~/Views/Home/Create.cshtml", CreateIntroVM);
     }
 
     [HttpPost]
@@ -73,7 +78,7 @@ public class CreateGameController : Controller
             Description = CreateStoryVM.Description ?? "",
             DifficultyLevel = CreateStoryVM.DifficultyLevel,
             Accessible = CreateStoryVM.Accessibility,
-            Code = gameCode
+            GameCode = gameCode
         };
 
         await _stories.AddStory(game);
@@ -87,26 +92,47 @@ public class CreateGameController : Controller
     }
 
 
-        // GET: /CreateGame/CreateQuestion?storyId=123&questionIndex=1
-       [HttpGet]
-        public IActionResult CreateMultipleQuestion(int storyId, int questionIndex = 1)
-        {
-            var vm = new CreateStoryViewModel
-            {
-                StoryId = storyId,
-                Step = questionIndex, // følger samme logikk som ditt “step”-felt
-                Questions = new List<CreateQuestionViewModel>
-                {
-                    new CreateQuestionViewModel
-                    {
-                        QuestionId = 0,
-                        QuestionText = string.Empty
-                    }
-                }
-            };
+    // GET: /CreateGame/CreateQuestion?storyId=123&questionIndex=1
+// using Jam.Models.Enums;  // bare hvis du filtrerer på SceneType andre steder
+[HttpGet]
+public async Task<IActionResult> CreateMultipleQuestion(int storyId, int questionIndex = 1)
+{
+    var qScenes = await _scenes.GetQuestionScenesByStoryId(storyId); // returnerer IEnumerable<QuestionScene>
 
-            return View(vm);
-        }
+    var vm = new CreateStoryViewModel
+    {
+        StoryId = storyId,
+        Step = questionIndex,
+        Questions = qScenes.Select(qs =>
+        {
+            // Hent lagrede svar (hvis du har AnswerOptions på QuestionScene)
+            var answers   = qs.AnswerOptions?.Select(a => a.Answer).ToList() ?? new List<string>();
+            var feedbacks = qs.AnswerOptions?.Select(a => a.FeedbackText ?? "").ToList() ?? new List<string>();
+            var correct   = qs.AnswerOptions?.Select(a => a.IsCorrect).ToList() ?? new List<bool>();
+
+            // Pad til 4 elementer (UI-en din forventer 4)
+            while (answers.Count   < 4) answers.Add("");
+            while (feedbacks.Count < 4) feedbacks.Add("");
+            while (correct.Count   < 4) correct.Add(false);
+
+            return new CreateQuestionViewModel
+            {
+                QuestionId   = qs.QuestionSceneId,                // riktig id for redigering
+                QuestionText = qs.SceneText ?? string.Empty,      // evt. qs.QuestionText hvis det er feltet ditt
+                Answers      = answers,
+                Feedbacks    = feedbacks,
+                IsCorrect    = correct
+            };
+        }).ToList()
+    };
+
+    if (vm.Questions.Count == 0)
+        vm.Questions.Add(new CreateQuestionViewModel()); // første gang: vis tomt skjema
+
+    return View(vm);
+}
+
+        
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -230,24 +256,91 @@ public class CreateGameController : Controller
         await _db.SaveChangesAsync();
 
         var story = await _db.Stories.FindAsync(CreateStoryVM.StoryId);
-        if (story?.Accessible == Accessibility.Private && !string.IsNullOrEmpty(story.Code))
+        if (story?.Accessible == Accessibility.Private && !string.IsNullOrEmpty(story.GameCode))
         {
-            TempData["GameCode"] = story.Code;
+            TempData["GameCode"] = story.GameCode;
             return RedirectToAction(nameof(GameCreated), new { storyId = story.StoryId });
         }
 
         // Ellers send tilbake til Home som før
         return RedirectToAction("Index", "Home");
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> GameCreated(int storyId)
     {
         var story = await _db.Stories.FindAsync(storyId);
         if (story == null) return NotFound();
 
-        ViewBag.Code = story.Code;
+        ViewBag.GameCode = story.GameCode;
         ViewBag.Title = story.Title;
         return View();
     }
+    
+    [HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> CreateOrEdit(CreateStoryViewModel model, string action)
+{
+    // Navigering mellom steg
+    if (string.Equals(action, "Back", StringComparison.OrdinalIgnoreCase))
+    {
+        model.Step = Math.Max(1, model.Step - 1);
+        return View("~/Views/Home/Create.cshtml", model);
+    }
+    if (string.Equals(action, "Next", StringComparison.OrdinalIgnoreCase))
+    {
+        model.Step++;
+        return View("~/Views/Home/Create.cshtml", model);
+    }
+
+    // Finish = lagre
+    if (!ModelState.IsValid)
+        return View("~/Views/Home/Create.cshtml", model);
+
+    if (model is EditStoryViewModel { IsEditMode: true })
+    {
+        // UPDATE
+        var story = await _db.Stories.FindAsync(model.StoryId);
+        if (story == null) return NotFound();
+
+        story.Title = model.Title ?? "";
+        story.Description = model.Description ?? "";
+        //story.Intro = model.Intro ?? "";
+        story.DifficultyLevel = model.DifficultyLevel;
+        // Håndter endring av public/private + kode
+        if (story.Accessible != model.Accessibility)
+        {
+            story.Accessible = model.Accessibility;
+            if (story.Accessible == Accessibility.Private && string.IsNullOrEmpty(story.GameCode))
+                story.GameCode = Guid.NewGuid().ToString("N")[..6].ToUpper();
+            if (story.Accessible == Accessibility.Public)
+                story.GameCode = null; // valgfritt
+        }
+
+        await _db.SaveChangesAsync();
+        return RedirectToAction("Details", "Story", new { id = story.StoryId });
+    }
+    else
+    {
+        // CREATE
+        string? code = null;
+        if (model.Accessibility == Accessibility.Private)
+            code = Guid.NewGuid().ToString("N")[..6].ToUpper();
+
+        var story = new Story
+        {
+            Title = model.Title ?? "",
+            Description = model.Description ?? "",
+            //IntroScene = model.intro ?? "",
+            DifficultyLevel = model.DifficultyLevel,
+            Accessible = model.Accessibility,
+            GameCode = code
+        };
+
+        await _stories.AddStory(story);
+        // Videre til spørsmål-flyten din
+        return RedirectToAction(nameof(CreateMultipleQuestion), new { storyId = story.StoryId, questionIndex = 1 });
+    }
+}
+
 }

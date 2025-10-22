@@ -75,10 +75,10 @@ public class StoryRepository : IStoryRepository
             .FirstOrDefaultAsync(s => s.StoryId == id && s.Accessible == Accessibility.Public);
     }
 
-    public async Task<Story?> GetPrivateStoryByCode(string code)
+    public async Task<Story?> GetPrivateStoryByCode(string GameCode)
     {
         return await _db.Stories
-            .FirstOrDefaultAsync(s => s.Code == code && s.Accessible == Accessibility.Private);
+            .FirstOrDefaultAsync(s => s.GameCode == GameCode && s.Accessible == Accessibility.Private);
     }
 
     // Created this new method to count the amount of questions in a Story
@@ -94,12 +94,12 @@ public class StoryRepository : IStoryRepository
     // Created this new method to get the code for a Story
     public async Task<string?> GetCodeForStory(int storyId)
     {
-        var code = await _db.Stories
+        var GameCode = await _db.Stories
         .Where(s => s.StoryId == storyId)
-        .Select(s => s.Code)
+        .Select(s => s.GameCode)
         .FirstOrDefaultAsync();
 
-        return code;
+        return GameCode;
     }
 
 
@@ -118,22 +118,22 @@ public class StoryRepository : IStoryRepository
     // I created this new method which is used in both StoryCreationController and
     // StoryEditController. It is used by the method GenerateUniqueStoryCodeAsync()
     // DoesCodeExist(string code) checks if the gerenated code is unique or not
-    public async Task<bool> DoesCodeExist(string code)
+    public async Task<bool> DoesCodeExist(string GameCode)
     {
-        return await _db.Stories.AnyAsync(s => s.Code == code);
+        return await _db.Stories.AnyAsync(s => s.GameCode == GameCode);
     }
 
     // Have to move business logic (for creating code) out of this method
     public async Task UpdateStory(Story story)
     {
-        if (story.Accessible == Accessibility.Private && string.IsNullOrEmpty(story.Code))
+        if (story.Accessible == Accessibility.Private && string.IsNullOrEmpty(story.GameCode))
         {
-            string code = Guid.NewGuid().ToString("N")[..8].ToUpper(); // 8-char unique code
-            story.Code = code;
+            string GameCode = Guid.NewGuid().ToString("N")[..8].ToUpper(); // 8-char unique code
+            story.GameCode = GameCode;
         }
         else if (story.Accessible == Accessibility.Public)
         {
-            story.Code = null; // remove code if switching to public
+            story.GameCode = null; // remove code if switching to public
         }
 
         _db.Stories.Update(story);

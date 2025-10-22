@@ -1,4 +1,4 @@
-using Jam.DAL.AnswerOptionDAL;
+/*using Jam.DAL.AnswerOptionDAL;
 using Jam.DAL;
 using Jam.DAL.StoryDAL;
 using Microsoft.AspNetCore.Mvc;
@@ -66,4 +66,4 @@ public class BrowoseController : Controller
     }
 
 
-}
+}*/

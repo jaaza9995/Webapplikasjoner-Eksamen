@@ -1,24 +1,22 @@
-@model Jam.ViewModels.CreateStoryViewModel
+@model Jam.ViewModels.EditStoryViewModel
 
-<h2>Create New Story</h2>
+<h2>@(Model.IsEditMode ? "Edit Story" : "Create New Story")</h2>
 
-<form asp-action="Create" method="post">
+<form asp-action="CreateOrEdit" method="post">
     <input type="hidden" asp-for="Step" />
+    <input type="hidden" asp-for="IsEditMode" />
+    <input type="hidden" asp-for="StoryId" />
 
-    <div>
-        @if (Model.Step == 1)
+    @{
+        var partials = new[]
         {
-            <partial name="Partials/_CreateDetails" model="Model" />
-        }
-        else if (Model.Step == 2)
-        {
-            <partial name="Partials/_CreateQuestions" model="Model" />
-        }
-        else if (Model.Step == 3)
-        {
-            <partial name="Partials/_CreateEndings" model="Model" />
-        }
-    </div>
+            "Partials/_CreateIntro",
+            "Partials/_CreateQuestions",
+            "Partials/_CreateEndings"
+        };
+    }
+
+    <partial name="@partials[Model.Step - 1]" model="Model" />
 
     <div class="mt-3 d-flex justify-content-between">
         @if (Model.Step > 1)
@@ -26,13 +24,15 @@
             <button type="submit" name="action" value="Back" class="btn btn-secondary">Back</button>
         }
 
-        @if (Model.Step < 3)
+        @if (Model.Step < partials.Length)
         {
             <button type="submit" name="action" value="Next" class="btn btn-primary">Next</button>
         }
         else
         {
-            <button type="submit" name="action" value="Finish" class="btn btn-success">Finish Game</button>
+            <button type="submit" name="action" value="Finish" class="btn btn-success">
+                @(Model.IsEditMode ? "Save Changes" : "Finish")
+            </button>
         }
     </div>
 </form>

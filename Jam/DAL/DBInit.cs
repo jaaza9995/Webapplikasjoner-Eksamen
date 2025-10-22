@@ -68,7 +68,7 @@ public static class DBInit
                     Finished = 0,
                     Failed = 0,
                     Dnf = 0,
-                    Code = "A123B29",
+                    GameCode = "A123B29",
                     User = users[1],
                 },
                 new Story
