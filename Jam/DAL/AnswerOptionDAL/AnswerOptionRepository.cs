@@ -12,9 +12,19 @@ public class AnswerOptionRepository : IAnswerOptionRepository
         _db = db;
     }
 
-    public async Task<IEnumerable<Scene>> GetAllAnswerOptions()
+
+    // --------------------------------------- Read ---------------------------------------
+
+    public async Task<IEnumerable<AnswerOption>> GetAllAnswerOptions()
     {
-        return await _db.Scenes.ToListAsync();
+        return await _db.AnswerOptions.ToListAsync();
+    }
+
+    public async Task<IEnumerable<AnswerOption>> GetAnswerOptionByQuestionSceneId(int questionSceneId)
+    {
+        return await _db.AnswerOptions
+            .Where(ao => ao.QuestionSceneId == questionSceneId)
+            .ToListAsync();
     }
 
     public async Task<AnswerOption?> GetAnswerOptionById(int id)
@@ -22,28 +32,30 @@ public class AnswerOptionRepository : IAnswerOptionRepository
         return await _db.AnswerOptions.FindAsync(id);
     }
 
-    public async Task<IEnumerable<AnswerOption>> GetAnswerOptionsByQuestionId(int questionId)
-    {
-        return await _db.AnswerOptions
-            .Where(ao => ao.QuestionId == questionId)
-            .ToListAsync();
-    }
 
-    // ======================================================================================
-    //   Creation mode
-    // ======================================================================================
 
-    public async Task CreateAnswerOption(AnswerOption answerOption)
+
+    // --------------------------------------- Create ---------------------------------------
+
+    public async Task AddAnswerOption(AnswerOption answerOption)
     {
         _db.AnswerOptions.Add(answerOption);
         await _db.SaveChangesAsync();
     }
+
+
+
+    // --------------------------------------- Update ---------------------------------------
 
     public async Task UpdateAnswerOption(AnswerOption answerOption)
     {
         _db.AnswerOptions.Update(answerOption);
         await _db.SaveChangesAsync();
     }
+
+
+
+    // --------------------------------------- Delete ---------------------------------------
 
     public async Task<bool> DeleteAnswerOption(int id)
     {

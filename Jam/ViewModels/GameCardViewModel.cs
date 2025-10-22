@@ -7,7 +7,7 @@ public class GameCardViewModel
     public string Title { get; set; } = "";
     public string Description { get; set; } = "";
     public int NumberOfQuestions { get; set; }
-    public string DifficultyLevel { get; set; } = "";
+    public string DifficultyOptions { get; set; } = "";
     public Accessibility Accessible { get; set; }
         // New property returns if game is public
     public bool IsPublic => Accessible == Accessibility.Public;

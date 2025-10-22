@@ -6,7 +6,7 @@ namespace Jam.DAL.SceneDAL;
 
 // Remember: should move business-logic to a service layer or the StoryController 
 
-public class SceneRepository : ISceneRepository
+public class SceneRepository : ISceneRepository 
 {
     private readonly StoryDbContext _db;
 
@@ -15,6 +15,158 @@ public class SceneRepository : ISceneRepository
         _db = db;
     }
 
+
+    // --------------------------------- INTRO SCENE ---------------------------------
+
+    public async Task<IntroScene?> GetIntroSceneByStoryId(int storyId)
+    {
+        return await _db.IntroScenes.FirstOrDefaultAsync(i => i.StoryId == storyId);
+    }
+
+    public async Task AddIntroScene(IntroScene introScene)
+    {
+        _db.IntroScenes.Add(introScene);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task UpdateIntroScene(IntroScene introScene)
+    {
+        _db.IntroScenes.Update(introScene);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task<bool> DeleteIntroScene(int introSceneId)
+    {
+        var scene = await _db.IntroScenes.FindAsync(introSceneId);
+        if (scene == null)
+        {
+            return false;
+        }
+
+        _db.IntroScenes.Remove(scene);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+
+
+
+    // --------------------------------- Question SCENE ---------------------------------
+
+    public async Task<IEnumerable<QuestionScene>> GetQuestionScenesByStoryId(int storyId)
+    {
+        return await _db.QuestionScenes
+            .Where(q => q.StoryId == storyId)
+            .Include(q => q.AnswerOptions)
+            .ToListAsync();
+    }
+
+    public async Task<QuestionScene?> GetQuestionSceneById(int id)
+    {
+        return await _db.QuestionScenes
+            .Include(q => q.AnswerOptions)
+            .FirstOrDefaultAsync(q => q.QuestionSceneId == id);
+    }
+
+
+    public async Task AddQuestionScene(QuestionScene scene)
+    {
+        _db.QuestionScenes.Add(scene);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task UpdateQuestionScene(QuestionScene scene)
+    {
+        _db.QuestionScenes.Update(scene);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task<bool> DeleteQuestionScene(int id, int? previousSceneId)
+    {
+        var scene = await _db.QuestionScenes.FindAsync(id);
+        if (scene == null)
+        {
+            return false;
+        }
+
+        // if false, it means that we are dealing with the first QuestionScene
+        // When removing the first QuestionScene, we do not have to deal with previousSceneId
+        // Thats because the IntroScene for a Story does NOT point to the first QuestionScene
+        if (previousSceneId != null)
+        {
+            var previousScene = await _db.QuestionScenes.FindAsync(previousSceneId);
+            if (previousScene == null)
+                throw new Exception("Previous scene not found");
+            previousScene.NextQuestionSceneId = scene.NextQuestionSceneId;
+        }
+
+        _db.QuestionScenes.Remove(scene);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+
+
+
+
+    // --------------------------------- Ending SCENE ---------------------------------
+
+    public async Task<IEnumerable<EndingScene>> GetEndingScenesByStoryId(int storyId)
+    {
+        return await _db.EndingScenes
+            .Where(e => e.StoryId == storyId)
+            .ToListAsync();
+    }
+
+    public async Task<EndingScene?> GetGoodEndingSceneByStoryId(int storyId)
+    {
+        return await _db.EndingScenes
+            .FirstOrDefaultAsync(e => e.StoryId == storyId && e.EndingType == EndingType.Good);
+    }
+
+    public async Task<EndingScene?> GetNeutralEndingSceneByStoryId(int storyId)
+    {
+        return await _db.EndingScenes
+            .FirstOrDefaultAsync(e => e.StoryId == storyId && e.EndingType == EndingType.Neutral);
+    }
+
+    public async Task<EndingScene?> GetBadEndingSceneByStoryId(int storyId)
+    {
+        return await _db.EndingScenes
+            .FirstOrDefaultAsync(e => e.StoryId == storyId && e.EndingType == EndingType.Bad);
+    }
+
+    public async Task AddEndingScene(EndingScene endingScene)
+    {
+        _db.EndingScenes.Add(endingScene);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task UpdateEndingScene(EndingScene endingScene)
+    {
+        _db.EndingScenes.Update(endingScene);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task<bool> DeleteEndingScene(int id)
+    {
+        var scene = await _db.EndingScenes.FindAsync(id);
+        if (scene == null)
+        {
+            return false;
+        }
+
+        _db.EndingScenes.Remove(scene);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+}
+
+
+
+
+/*
     public async Task<IEnumerable<Scene>> GetAllScenes()
     {
         return await _db.Scenes.ToListAsync();
@@ -29,14 +181,13 @@ public class SceneRepository : ISceneRepository
 
     public async Task<IEnumerable<Scene>> GetScenesInOrderByStoryId(int storyId)
     {
-        /*
-            Optionally include Question + AnswerOptions:
-                var scenes = await _db.Scenes
-                    .Where(sc => sc.StoryId == storyId)
-                    .Include(sc => sc.Question!)
-                        .ThenInclude(q => q.AnswerOptions)
-                    .ToListAsync();
-        */
+        // Optionally include Question + AnswerOptions:
+        //     var scenes = await _db.Scenes
+        //         .Where(sc => sc.StoryId == storyId)
+        //         .Include(sc => sc.Question!)
+        //         .ThenInclude(q => q.AnswerOptions)
+        //         .ToListAsync();
+        
 
         // Load all scenes for the story in one query 
         var scenes = await _db.Scenes
@@ -91,14 +242,12 @@ public class SceneRepository : ISceneRepository
 
     public async Task<IEnumerable<Scene>> GetQuestionScenesInOrderByStoryId(int storyId)
     {
-        /*
-            Optionally include Question + AnswerOptions:
-                var questionScenes = await _db.Scenes
-                    .Where(sc => sc.StoryId == storyId)
-                    .Include(sc => sc.Question!)
-                        .ThenInclude(q => q.AnswerOptions)
-                    .ToListAsync();
-        */
+        // Optionally include Question + AnswerOptions:
+        //      var questionScenes = await _db.Scenes
+        //          .Where(sc => sc.StoryId == storyId)
+        //          .Include(sc => sc.Question!)
+        //              .ThenInclude(q => q.AnswerOptions)
+        //          .ToListAsync();
 
         // Load all scenes for the story 
         var scenes = await _db.Scenes
@@ -154,7 +303,7 @@ public class SceneRepository : ISceneRepository
         return await _db.Scenes.FindAsync(id);
     }
 
-    public async Task<Scene?> GetSceneWithDetailsById(int id)
+    public async Task<Scene?> GetSceneWithDetailsPreloaded(int id)
     {
         return await _db.Scenes
             .Include(sc => sc.Question!)
@@ -166,28 +315,13 @@ public class SceneRepository : ISceneRepository
     //   Creation mode
     // ======================================================================================
 
-    public async Task CreateScene(Scene scene, int? previousSceneId)
+
+    // I have moved the if-test and its codeblock to link previousScene --> scene out of DAL
+    // This logic is now in StoryCreationController as a private method: AddSceneAsync()
+    public async Task CreateScene(Scene scene)
     {
         _db.Scenes.Add(scene);
         await _db.SaveChangesAsync();
-
-        if (previousSceneId != null)
-        {
-            var previousScene = await _db.Scenes.FindAsync(previousSceneId.Value);
-            if (previousScene == null)
-                throw new Exception("Previous scene not found");
-
-            // Only update NextScene if allowed
-            if (previousScene.SceneType == SceneType.Introduction || previousScene.SceneType == SceneType.Question)
-            {
-                // Ensure we don’t overwrite an existing NextScene
-                if (previousScene.NextSceneId != null)
-                    throw new Exception("Previous scene already points to a NextScene");
-
-                previousScene.NextSceneId = scene.SceneId;
-                await _db.SaveChangesAsync();
-            }
-        }
     }
 
     public async Task UpdateScene(Scene scene)
@@ -204,7 +338,7 @@ public class SceneRepository : ISceneRepository
             return false;
         }
 
-        if (previousSceneId != null) // if true = it is a Question-scene, if false = it is an Introduction-scene or an Ending-scene
+        if (previousSceneId != null) // if true = Question-scene, if false = Introduction Scene or Ending Scene
         {
             var previousScene = await _db.Scenes.FindAsync(previousSceneId);
             if (previousScene == null)
@@ -226,6 +360,7 @@ public class SceneRepository : ISceneRepository
             .FirstOrDefaultAsync(sc => sc.StoryId == storyId && sc.SceneType == SceneType.Introduction);
     }
 
+    // I have updated this method to return a scene without loading related data
     public async Task<Scene?> GetNextScene(int currentSceneId)
     {
         var currentScene = await _db.Scenes.FindAsync(currentSceneId);
@@ -234,19 +369,23 @@ public class SceneRepository : ISceneRepository
             return null; // the current scene is the last Question-scene, so there is no NextScene
         }
 
-        return await _db.Scenes
-            .Include(sc => sc.Question!)
-            .ThenInclude(q => q.AnswerOptions)
-            .FirstOrDefaultAsync(s => s.SceneId == currentScene.NextSceneId);
+        // Just return the next scene without loading Question and AnswerOptions
+        return await _db.Scenes.FirstOrDefaultAsync(s => s.SceneId == currentScene.NextSceneId);
+
+        // return await _db.Scenes
+        //    .Include(sc => sc.Question!)
+        //    .ThenInclude(q => q.AnswerOptions)
+        //    .FirstOrDefaultAsync(s => s.SceneId == currentScene.NextSceneId);
     }
 
+    // This method will no longer be in use
+    // I have moved the business logic of choosing the right scene to the controller
+    // Instead I have added 3 new methods to fetch each of the 3 Ending Scene types
     public async Task<Scene?> GetEndingSceneForStory(int storyId, int userId)
     {
-        /*
-            Instead of accessing the PlayingSession based on storyId && UserId && latest StartTime,
-            we can just access the PlayingSession directly via the user´s PlayingSessionId, considering 
-            that we are able to provde the correct PlayingSessionId from the client side
-        */
+        //    Instead of accessing the PlayingSession based on storyId && UserId && latest StartTime,
+        //    we can just access the PlayingSession directly via the user´s PlayingSessionId, considering 
+        //    that we are able to provde the correct PlayingSessionId from the client side
 
         var session = await _db.PlayingSessions
             .Where(ps => ps.UserId == userId && ps.StoryId == storyId)
@@ -269,5 +408,28 @@ public class SceneRepository : ISceneRepository
             .Where(sc => sc.StoryId == storyId && sc.SceneType == endingType)
             .FirstOrDefaultAsync();
     }
-}
 
+    // New method
+    public async Task<Scene?> GetGoodEndingScene(int storyId)
+    {
+        return await _db.Scenes
+            .Where(sc => sc.StoryId == storyId && sc.SceneType == SceneType.EndingGood)
+            .FirstOrDefaultAsync();
+    }
+
+    // New method
+    public async Task<Scene?> GetNeutralEndingScene(int storyId)
+    {
+        return await _db.Scenes
+            .Where(sc => sc.StoryId == storyId && sc.SceneType == SceneType.EndingNeutral)
+            .FirstOrDefaultAsync();
+    }
+
+    // New method
+    public async Task<Scene?> GetBadEndingScene(int storyId)
+    {
+        return await _db.Scenes
+            .Where(sc => sc.StoryId == storyId && sc.SceneType == SceneType.EndingBad)
+            .FirstOrDefaultAsync();
+    }
+*/

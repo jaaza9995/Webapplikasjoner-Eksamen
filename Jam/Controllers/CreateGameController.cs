@@ -1,36 +1,36 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc;
 using Jam.ViewModels;
-using Jam.Models;             
+using Jam.Models;    
 using Jam.DAL.StoryDAL;
 using Jam.DAL.AnswerOptionDAL;
-using Jam.DAL.QuestionDAL;
 using Jam.Models.Enums;     
+using Jam.DAL;
 
 namespace Jam.Controllers;
 
 public class CreateGameController : Controller
 {
     private readonly IStoryRepository _stories;
-    private readonly IQuestionRepository _questions;
     private readonly IAnswerOptionRepository _answers;
+    private readonly StoryDbContext _db;
 
     public CreateGameController(
         IAnswerOptionRepository answerOptionRepository,
-        IQuestionRepository questionRepository,
-        IStoryRepository storiesRepository)
+        IStoryRepository storiesRepository,
+        StoryDbContext db)
     {
         _answers = answerOptionRepository;
-        _questions = questionRepository;
         _stories = storiesRepository;
+        _db = db;
     }
 
     [HttpGet]
-    public IActionResult CreateStoryAndIntro()
+    public IActionResult CreateIntro()
     {
-        var vm = new CreateStoryAndIntroViewModel
+        var CreateIntroVM = new CreateStoryViewModel
         {
-            DifficultyLevelOptions = Enum.GetValues(typeof(DifficultyLevel))
+            DifficultyOptions = Enum.GetValues(typeof(DifficultyLevel))
                 .Cast<DifficultyLevel>()
                 .Select(d => new SelectListItem { Value = d.ToString(), Text = d.ToString() })
                 .ToList(),
@@ -39,289 +39,215 @@ public class CreateGameController : Controller
                 .Select(a => new SelectListItem { Value = a.ToString(), Text = a.ToString() })
                 .ToList()
         };
-
-        return View(vm);
+        return View(CreateIntroVM);        
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateStoryAndIntro(CreateStoryAndIntroViewModel vm)
+    public async Task<IActionResult> CreateIntro(CreateStoryViewModel CreateStoryVM)
     {
         if (!ModelState.IsValid)
         {
             // repopuler dropdowns ved valideringsfeil
-            vm.DifficultyLevelOptions = Enum.GetValues(typeof(DifficultyLevel))
+            CreateStoryVM.DifficultyOptions = Enum.GetValues(typeof(DifficultyLevel))
                 .Cast<DifficultyLevel>()
                 .Select(d => new SelectListItem { Value = d.ToString(), Text = d.ToString() })
                 .ToList();
-            vm.AccessibilityOptions = Enum.GetValues(typeof(Accessibility))
+            CreateStoryVM.AccessibilityOptions = Enum.GetValues(typeof(Accessibility))
                 .Cast<Accessibility>()
                 .Select(a => new SelectListItem { Value = a.ToString(), Text = a.ToString() })
                 .ToList();
 
-            return View(vm);
+            return View(CreateStoryVM);
         }
 
-        // 1) Lagre selve Story (kun StoryRepository)
+        // 1) Generer kode hvis spillet er privat
+        string? gameCode = null;
+        if (CreateStoryVM.Accessibility == Accessibility.Private)
+            gameCode = Guid.NewGuid().ToString("N")[..6].ToUpper();
+
+        // 2) Lagre storyen
         var game = new Story
         {
-            Title = vm.Title ?? "",
-            Description = vm.Description ?? "",      // se NOTE om IntroText under
-            DifficultyLevel = vm.DifficultyLevel,
-            Accessible = vm.Accessibility
-            // Code settes senere hvis du bytter til Private i UpdateStory,
-            // eller generer her hvis du vil.
+            Title = CreateStoryVM.Title ?? "",
+            Description = CreateStoryVM.Description ?? "",
+            DifficultyLevel = CreateStoryVM.DifficultyLevel,
+            Accessible = CreateStoryVM.Accessibility,
+            Code = gameCode
         };
 
-        await _stories.CreateStory(game); // CreateStory: Task (void). EF setter StoryId på 'story'.
+        await _stories.AddStory(game);
 
-        return RedirectToAction(nameof(CreateQuestionScene), new
+        // 3) Gå videre til neste steg
+        return RedirectToAction(nameof(CreateMultipleQuestion), new
         {
             gameId = game.StoryId,
             questionIndex = 1
         });
     }
 
+
         // GET: /CreateGame/CreateQuestion?storyId=123&questionIndex=1
-        [HttpGet]
-        public IActionResult CreateQuestionScene(int storyId, int questionIndex = 1)
+       [HttpGet]
+        public IActionResult CreateMultipleQuestion(int storyId, int questionIndex = 1)
         {
-            var vm = new CreateQuestionSceneViewModel
+            var vm = new CreateStoryViewModel
             {
                 StoryId = storyId,
-                PreviousSceneId = null,            // kan kobles senere om ønsket
-                QuestionsMade = Math.Max(0, questionIndex - 1)
+                Step = questionIndex, // følger samme logikk som ditt “step”-felt
+                Questions = new List<CreateQuestionViewModel>
+                {
+                    new CreateQuestionViewModel
+                    {
+                        QuestionId = 0,
+                        QuestionText = string.Empty
+                    }
+                }
             };
+
             return View(vm);
         }
 
-        // POST: /CreateGame/CreateQuestion
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateQuestion(CreateQuestionSceneViewModel vm, string? submit)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateMultipleQuestion(CreateStoryViewModel model, string? submit)
+    {
+        if (model == null) return BadRequest("Ugyldig skjema.");
+
+        // Valider hvert spørsmål i modellen
+    for (int i = 0; i < model.Questions.Count; i++)
+    {
+        var q = model.Questions[i];
+
+        if (string.IsNullOrWhiteSpace(q.QuestionText))
+            ModelState.AddModelError($"Questions[{i}].QuestionText", "Spørsmål er påkrevd.");
+
+        if (q.Answers == null || q.Answers.Count != 4)
+            ModelState.AddModelError($"Questions[{i}].Answers", "Du må ha nøyaktig 4 svaralternativer.");
+
+        if (q.IsCorrect == null || q.IsCorrect.Count != 4)
+        ModelState.AddModelError($"Questions[{i}].IsCorrect", "Du må ha 4 verdier i IsCorrect-listen.");
+
+        var correctCount = q.IsCorrect.Count(c => c); // teller antall true
+        if (correctCount != 1)
+            ModelState.AddModelError($"Questions[{i}].IsCorrect", "Nøyaktig ett alternativ må være riktig.");
+
+        for (int j = 0; j < q.Answers.Count; j++)
         {
-            // Enkle servervalideringer:
-            if (vm == null) return BadRequest("Ugyldig skjema.");
-            if (string.IsNullOrWhiteSpace(vm.StoryText))
-                ModelState.AddModelError(nameof(vm.StoryText), "Story context er påkrevd.");
-            if (string.IsNullOrWhiteSpace(vm.QuestionText))
-                ModelState.AddModelError(nameof(vm.QuestionText), "Spørsmål er påkrevd.");
-            if (vm.Answers == null || vm.Answers.Count != 4)
-                ModelState.AddModelError(nameof(vm.Answers), "Du må ha nøyaktig 4 svaralternativer.");
+            if (string.IsNullOrWhiteSpace(q.Answers[j]))
+                ModelState.AddModelError($"Questions[{i}].Answers[{j}]", "Svartekst er påkrevd.");
 
-            // Kun 1 riktig (i notatene dine besluttet dere dette)
-            var correctCount = vm.Answers?.Count(a => a.IsCorrect) ?? 0;
-            if (correctCount != 1)
-                ModelState.AddModelError(nameof(vm.Answers), "Nøyaktig ett alternativ må være riktig.");
+        if (string.IsNullOrWhiteSpace(q.Feedbacks[j]))
+            ModelState.AddModelError($"Questions[{i}].Feedbacks[{j}]", "Feedback-tekst er påkrevd.");
+    }
 
-            // Svar- og outcome-tekst må være utfylt
-            if (vm.Answers != null)
+    }
+
+    if (!ModelState.IsValid)
+        return View(model);
+
+    // Lagre alle spørsmål i databasen
+    foreach (var q in model.Questions)
+    {
+        var question = new QuestionScene
+        {
+            SceneText = q.QuestionText,
+            Question = q.QuestionText,
+            StoryId = model.StoryId,
+            AnswerOptions = q.Answers.Select((a, idx) => new AnswerOption
             {
-                for (int i = 0; i < vm.Answers.Count; i++)
-                {
-                    if (string.IsNullOrWhiteSpace(vm.Answers[i].AnswerText))
-                        ModelState.AddModelError($"Answers[{i}].AnswerText", "Svartekst er påkrevd.");
-                    if (string.IsNullOrWhiteSpace(vm.Answers[i].ContextText))
-                        ModelState.AddModelError($"Answers[{i}].ContextText", "Outcome/feedback-tekst er påkrevd.");
-                }
-            }
+               Answer = a,
+                FeedbackText = q.Feedbacks[idx],
+                 IsCorrect = q.IsCorrect[idx]
+            }).ToList()
+        };
+    _db.QuestionScenes.Add(question);
+    await _db.SaveChangesAsync();
+    }
 
-            if (!ModelState.IsValid)
-            {
-                // vis samme boks igjen med valideringsfeil
-                return View(vm);
-            }
-
-            // Bygg Question med innebygd Scene og 4 AnswerOptions (lar EF cascade-lagre alt i ett kall)
-            var question = new Question
-            {
-                QuestionText = vm.QuestionText,
-                Scene = new Scene
-                {
-                    SceneType = SceneType.Question,
-                    SceneText = vm.StoryText,   // "story context"-boksen
-                    StoryId = vm.StoryId
-                },
-                AnswerOptions = vm.Answers.Select(a => new AnswerOption
-                {
-                    Answer = a.AnswerText,
-                    SceneText = a.ContextText,  // outcome-teksten som egen "mini-scene"
-                    IsCorrect = a.IsCorrect
-                }).ToList()
-            };
-
-            await _questions.CreateQuestion(question); // lagrer Scene, Question og AnswerOptions i ett (cascade)
-
-            // TODO (valgfritt): lenke forrige scene -> denne scenen.
-            // Krever SceneRepository eller DbContext for å sette Previous.NextSceneId = question.Scene.SceneId.
-
-            // Navigasjon videre
-            int nextIndex = vm.QuestionsMade + 1;
-
-            if (string.Equals(submit, "next", StringComparison.OrdinalIgnoreCase))
-            {
-                // Ny spørsmålsboks
-                return RedirectToAction(nameof(CreateQuestion), new { storyId = vm.StoryId, questionIndex = nextIndex + 1 });
-            }
-
-            // Hvis vi har minst 3 spørsmål, gå til endings-side; ellers send til ny boks uansett
-            if (nextIndex >= 3)
-                return RedirectToAction(nameof(CreateEndings), new { storyId = vm.StoryId });
-
-            return RedirectToAction(nameof(CreateQuestion), new { storyId = vm.StoryId, questionIndex = nextIndex + 1 });
+        // Navigasjon videre
+        model.Step++;
+        if (string.Equals(submit, "next", StringComparison.OrdinalIgnoreCase))
+        {
+            return RedirectToAction(nameof(CreateMultipleQuestion), new { storyId = model.StoryId, questionIndex = model.Step });
         }
 
+        if (model.Questions.Count >= 3)
+        {
+            return RedirectToAction(nameof(CreateEndings), new { storyId = model.StoryId });
+        }
 
-        
+        return RedirectToAction(nameof(CreateMultipleQuestion), new { storyId = model.StoryId, questionIndex = model.Step });
+    }
 
         // Neste side i flyten (vis spørsmåls-skjema)
 
-        [HttpGet]
-        public IActionResult CreateEndings(int storyId)
-        {
-            return View(new CreateEndingsViewModel { StoryId = storyId });
-        }
-        
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateEndings(CreateEndingsViewModel vm)
-        {
-            if (string.IsNullOrWhiteSpace(vm.GoodEnding))
-                ModelState.AddModelError(nameof(vm.GoodEnding), "Good ending er påkrevd.");
-            if (string.IsNullOrWhiteSpace(vm.NeutralEnding))
-                ModelState.AddModelError(nameof(vm.NeutralEnding), "Neutral ending er påkrevd.");
-            if (string.IsNullOrWhiteSpace(vm.BadEnding))
-                ModelState.AddModelError(nameof(vm.BadEnding), "Bad ending er påkrevd.");
-
-            if (!ModelState.IsValid) return View(vm);
-
-            // Lag tre endingscener (bruk din SceneRepository eller DbContext)
-            var good = new Scene { StoryId = vm.StoryId, SceneType = SceneType.EndingGood, SceneText = vm.GoodEnding };
-            var neutral = new Scene { StoryId = vm.StoryId, SceneType = SceneType.EndingNeutral, SceneText = vm.NeutralEnding };
-            var bad = new Scene { StoryId = vm.StoryId, SceneType = SceneType.EndingBad, SceneText = vm.BadEnding };
-
-            // Eksempel dersom du har en _db (StoryDbContext) tilgjengelig; ellers kall _scenes.CreateScene(...)
-            // _db.Scenes.AddRange(good, neutral, bad);
-            // await _db.SaveChangesAsync();
-
-            // Ferdig → hjem
-            return RedirectToAction("Index", "Home");
-        }
-
-
-    }
-
-
-    /*
-
-    public async Task<IActionResult> Table()
-    {
-        var items = await GetPlayingSessionById.GetAll();
-        if (items == null)
-        {
-            _logger.LogError("[ItemController] Item list not found while executing _itemRepository.GetAll()");
-            return NotFound("Item list not found");
-        }
-        var itemsViewModel = new ItemsViewModel(items, "Table");
-        return View(itemsViewModel);
-    }
-
-    public async Task<IActionResult> Grid()
-    {
-        var items = await _itemRepository.GetAll();
-        if (items == null)
-        {
-            _logger.LogError("[ItemController] Item list not found while executing _itemRepository.GetAll()");
-            return NotFound("Item list not found");
-        }
-        var itemsViewModel = new ItemsViewModel(items, "Grid");
-        return View(itemsViewModel);
-    }
-
-    public async Task<IActionResult> Details(int id)
-    {
-        var item = await _itemRepository.GetItemById(id);
-        if (item == null)
-        {
-            _logger.LogError("[ItemController] Item not found for the ItemId {ItemId:0000}", id);
-            return NotFound("Item not found for the ItemId");
-        }
-        return View(item);
-    }
-
     [HttpGet]
-    [Authorize]
-    public IActionResult Create()
+    public IActionResult CreateEndings(int storyId)
     {
+        return View(new CreateStoryViewModel { StoryId = storyId });
+    }
+
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateEndings(CreateStoryViewModel CreateStoryVM)
+    {
+        if (string.IsNullOrWhiteSpace(CreateStoryVM.HighEnding))
+            ModelState.AddModelError(nameof(CreateStoryVM.HighEnding), "Good ending er påkrevd.");
+        if (string.IsNullOrWhiteSpace(CreateStoryVM.MediumEnding))
+            ModelState.AddModelError(nameof(CreateStoryVM.MediumEnding), "Neutral ending er påkrevd.");
+        if (string.IsNullOrWhiteSpace(CreateStoryVM.LowEnding))
+            ModelState.AddModelError(nameof(CreateStoryVM.LowEnding), "Bad ending er påkrevd.");
+
+        if (!ModelState.IsValid) return View(CreateStoryVM);
+
+
+        // Lag tre avslutningsscener
+        var high = new EndingScene
+        {
+            StoryId = CreateStoryVM.StoryId,
+            EndingType = EndingType.Good,
+            EndingText = CreateStoryVM.HighEnding
+        };
+
+        var medium = new EndingScene
+        {
+            StoryId = CreateStoryVM.StoryId,
+            EndingType = EndingType.Neutral,
+            EndingText = CreateStoryVM.MediumEnding
+        };
+
+        var low = new EndingScene
+        {
+            StoryId = CreateStoryVM.StoryId,
+            EndingType = EndingType.Bad,
+            EndingText = CreateStoryVM.LowEnding
+        };
+
+        // Legg dem til databasen via DbContext
+        _db.EndingScenes.AddRange(high, medium, low);
+        await _db.SaveChangesAsync();
+
+        var story = await _db.Stories.FindAsync(CreateStoryVM.StoryId);
+        if (story?.Accessible == Accessibility.Private && !string.IsNullOrEmpty(story.Code))
+        {
+            TempData["GameCode"] = story.Code;
+            return RedirectToAction(nameof(GameCreated), new { storyId = story.StoryId });
+        }
+
+        // Ellers send tilbake til Home som før
+        return RedirectToAction("Index", "Home");
+    }
+    
+    [HttpGet]
+    public async Task<IActionResult> GameCreated(int storyId)
+    {
+        var story = await _db.Stories.FindAsync(storyId);
+        if (story == null) return NotFound();
+
+        ViewBag.Code = story.Code;
+        ViewBag.Title = story.Title;
         return View();
     }
-
-    [HttpPost]
-    [Authorize]
-    public async Task<IActionResult> Create(Item item)
-    {
-        if (ModelState.IsValid)
-        {
-            bool returnOk = await _itemRepository.Create(item);
-            if (returnOk)
-                return RedirectToAction(nameof(Table));
-        }
-        _logger.LogWarning("[ItemController] Item creation failed {@item}", item);
-        return View(item);
-    }
-
-    [HttpGet]
-    [Authorize]
-    public async Task<IActionResult> Update(int id)
-    {
-        var item = await _itemRepository.GetItemById(id);
-        if (item == null)
-        {
-            _logger.LogError("[ItemController] Item not found when updating the ItemId {ItemId:0000}", id);
-            return BadRequest("Item not found for the ItemId");
-        }
-        return View(item);
-    }
-
-    [HttpPost]
-    [Authorize]
-    public async Task<IActionResult> Update(Item item)
-    {
-        if (ModelState.IsValid)
-        {
-            bool returnOk = await _itemRepository.Update(item);
-            if (returnOk)
-                return RedirectToAction(nameof(Table));
-        }
-        _logger.LogWarning("[ItemController] Item update failed {@item}", item);
-        return View(item);
-    }
-
-    [HttpGet]
-    [Authorize]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var item = await _itemRepository.GetItemById(id);
-        if (item == null)
-        {
-            _logger.LogError("[ItemController] Item not found for the ItemId {ItemId:0000}", id);
-            return BadRequest("Item not found for the ItemId");
-        }
-        return View(item);
-    }
-
-    [HttpPost]
-    [Authorize]
-    public async Task<IActionResult> DeleteConfirmed(int id)
-    {
-        bool returnOk = await _itemRepository.Delete(id);
-        if (!returnOk)
-        {
-            _logger.LogError("[ItemController] Item deletion failed for the ItemId {ItemId:0000}", id);
-            return BadRequest("Item deletion failed");
-        }
-        return RedirectToAction(nameof(Table));
-    }
 }
-*/

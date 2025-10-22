@@ -1,32 +1,21 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
+using Jam.Models.Enums;
 
 namespace Jam.ViewModels
 {
     public class CreateStoryViewModel
     {
-        // Story details
+        // Game details
         public int StoryId { get; set; }
         public string Title { get; set; } = "";
         public string Description { get; set; } = "";
         public string Intro { get; set; } = "";
-        public string DifficultyLevel { get; set; } = "";
-        public string Accessibility { get; set; } = "";
-
-        // Dropdown lists
-        public List<SelectListItem> DifficultyOptions { get; set; } = new()
-        {
-            new SelectListItem("Easy", "Easy"),
-            new SelectListItem("Medium", "Medium"),
-            new SelectListItem("Hard", "Hard")
-        };
-
-        public List<SelectListItem> AccessibilityOptions { get; set; } = new()
-        {
-            new SelectListItem("Public", "Public"),
-            new SelectListItem("Private", "Private")
-        };
-
+        public List<SelectListItem> DifficultyOptions { get; set; } = new();
+        public DifficultyLevel DifficultyLevel { get; set; }
+        public List<SelectListItem> AccessibilityOptions { get; set; } = new();
+        public Accessibility Accessibility { get; set; }
+       
         // Questions and answers
         public List<CreateQuestionViewModel> Questions { get; set; } = new();
 
@@ -48,6 +37,3 @@ namespace Jam.ViewModels
         public List<bool> IsCorrect { get; set; } = new() { false, false, false, false };
     }
 }
-
-// public List<SelectListItem> DifficultyLevelOptions { get; set; } = new(); //verdien som blit valgt for vanskelighetsgrad
-// public List<SelectListItem> AccessibilityOptions { get; set; } = new();//Verdien som blit valgt for tilgjengelighetsvalg

@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Jam.Models;
-using Jam.Models.Enums;
 
 namespace Jam.DAL.PlayingSessionDAL;
 
@@ -12,6 +11,8 @@ public class PlayingSessionRepository : IPlayingSessionRepository
     {
         _db = db;
     }
+
+    // --------------------------------------- Read ---------------------------------------
 
     public async Task<IEnumerable<PlayingSession>> GetAllPlayingSessions()
     {
@@ -42,20 +43,34 @@ public class PlayingSessionRepository : IPlayingSessionRepository
         return await _db.PlayingSessions
             .Where(ps => ps.UserId == userId && ps.StoryId == storyId)
             .ToListAsync();
+    } 
+
+    // New method to retrieve the highscore from 
+    public async Task<int> GetUserHighScoreForStory(int userId, int storyId)
+    {
+        var bestScore = await _db.PlayingSessions
+            .Where(ps => ps.UserId == userId && ps.StoryId == storyId)
+            .OrderByDescending(ps => ps.Score)
+            .Select(ps => ps.Score)
+            .FirstOrDefaultAsync();
+
+        return bestScore;
     }
 
 
 
 
+    // --------------------------------------- Create ---------------------------------------
 
-
-
-
-    public async Task CreatePlayingSession(PlayingSession playingSession)
+    public async Task AddPlayingSession(PlayingSession playingSession)
     {
         _db.PlayingSessions.Add(playingSession);
         await _db.SaveChangesAsync();
     }
+
+    // I have commented out this code because we now have StoryPlayingController with this logic
+    // So we are now using the CreatePlayingSession-method above
+    /*
 
     // This is a mock version of the CreatePlayingSession above (which is the correct one)
     // In this method, I combine business logic from PlayingSessionController in the DAL
@@ -87,24 +102,32 @@ public class PlayingSessionRepository : IPlayingSessionRepository
 
         return session;
     }
+    */
 
 
 
 
+    // --------------------------------------- Update ---------------------------------------
 
-
-    // this is called from controller when user goes from Introduction to first Question-scene
+    // When user goes from IntroScene to first QuestionScene
     public async Task MoveToNextScene(int sessionId, int nextSceneId)
-        => await UpdateSessionProgressAsync(sessionId, nextSceneId);
+    {
+        await UpdateSessionProgressAsync(sessionId, nextSceneId); // private method (see below)
+    }
 
-    // this is called from controller when user goes from a Question-scene to another Question-scene
-    // this is also called from controller when user goes from the last Question-scene to an Ending-scene
+    // When user goes from a QuestionScene to another QuestionScene, or
+    // when user goes from the last QuestionScene to an EndingScene
     public async Task AnswerQuestion(int sessionId, int nextSceneId, int newScore, int newLevel)
-        => await UpdateSessionProgressAsync(sessionId, nextSceneId, newScore, newLevel);
-
-    // this is called when the user finished the Ending-scene
+    {
+        await UpdateSessionProgressAsync(sessionId, nextSceneId, newScore, newLevel); // private method (see below)
+    }
+        
+    // When user finishes the EndingScene (when user is done with the game)
     public async Task FinishSession(int sessionId, int finalScore, int newLevel)
-        => await UpdateSessionProgressAsync(sessionId, null, finalScore, newLevel);
+    {
+        await UpdateSessionProgressAsync(sessionId, null, finalScore, newLevel); // private method (see below)
+    }
+
 
     private async Task UpdateSessionProgressAsync(
         int sessionId,
@@ -134,8 +157,7 @@ public class PlayingSessionRepository : IPlayingSessionRepository
 
 
 
-
-
+    // --------------------------------------- Delete ---------------------------------------
 
     public async Task<bool> DeletePlayingSession(int id)
     {

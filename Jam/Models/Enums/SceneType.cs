@@ -2,9 +2,7 @@ namespace Jam.Models.Enums;
 
 public enum SceneType
 {
-    Introduction,
+    Intro,
     Question,
-    EndingGood,
-    EndingNeutral,
-    EndingBad
+    Ending
 }

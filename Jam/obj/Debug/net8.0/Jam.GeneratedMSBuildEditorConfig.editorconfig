@@ -42,16 +42,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGxheWluZ01vZGUvUGxheS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Shared/_CreateDetails.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19DcmVhdGVEZXRhaWxzLmNzaHRtbA==
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Shared/_Create/_CreateDetails.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19DcmVhdGUvX0NyZWF0ZURldGFpbHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Shared/_CreateEndings.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19DcmVhdGVFbmRpbmdzLmNzaHRtbA==
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Shared/_Create/_CreateEndings.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19DcmVhdGUvX0NyZWF0ZUVuZGluZ3MuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Shared/_CreateQuestions.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19DcmVhdGVRdWVzdGlvbnMuY3NodG1s
+[/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Shared/_Create/_CreateQuestions.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19DcmVhdGUvX0NyZWF0ZVF1ZXN0aW9ucy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/Views/Shared/_GameCard.cshtml]

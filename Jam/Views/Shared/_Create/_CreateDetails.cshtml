@@ -21,19 +21,19 @@
 </div>
 
 <div class="form-group">
-    <label asp-for="DifficultyLevel">Difficulty</label><span class="text-danger">*</span>
-    <select asp-for="DifficultyLevel" asp-items="Model.DifficultyOptions" class="form-control">
+    <label asp-for="DifficultyOptions">Difficulty</label><span class="text-danger">*</span>
+    <select asp-for="DifficultyOptions" asp-items="Model.DifficultyOptions" class="form-control">
         <option value="">Select difficulty</option>
     </select>
-    <span asp-validation-for="DifficultyLevel" class="text-danger"></span>
+    <span asp-validation-for="DifficultyOptions" class="text-danger"></span>
 </div>
 
 <div class="form-group">
-    <label asp-for="Accessibility">Privacy</label><span class="text-danger">*</span>
-    <select asp-for="Accessibility" asp-items="Model.AccessibilityOptions" class="form-control">
+    <label asp-for="AccessibilityOptions">Privacy</label><span class="text-danger">*</span>
+    <select asp-for="AccessibilityOptions" asp-items="Model.AccessibilityOptions" class="form-control">
         <option value="">Select privacy</option>
     </select>
-    <span asp-validation-for="Accessibility" class="text-danger"></span>
+    <span asp-validation-for="AccessibilityOptions" class="text-danger"></span>
 </div>
 
 @if (Model.IsEditMode)

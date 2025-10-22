@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using Jam.Models; 
+using Jam.Models;
+using System.Runtime.CompilerServices;
 
 namespace Jam.DAL;
 
@@ -7,14 +8,15 @@ public class StoryDbContext : DbContext
 {
     public StoryDbContext(DbContextOptions<StoryDbContext> options) : base(options)
     {
-        //Database.EnsureCreated();
+        // Database.EnsureCreated();
     }
 
     public DbSet<Story> Stories { get; set; }
     public DbSet<User> Users { get; set; }
-    public DbSet<Scene> Scenes { get; set; }
-    public DbSet<Question> Questions { get; set; }
+    public DbSet<IntroScene> IntroScenes { get; set; }
+    public DbSet<QuestionScene> QuestionScenes { get; set; }
     public DbSet<AnswerOption> AnswerOptions { get; set; }
+    public DbSet<EndingScene> EndingScenes { get; set; }
     public DbSet<PlayingSession> PlayingSessions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -40,61 +42,75 @@ public class StoryDbContext : DbContext
             .HasForeignKey(ps => ps.UserId)
             .OnDelete(DeleteBehavior.SetNull);
 
+
+
         // ==========================================================================
         // 2. STORY STRUCTURE RELATIONSHIPS (Cascade Delete for Dependent Content)
         //    If the principal entity is deleted, all dependent entities are deleted
         // ==========================================================================
 
-        // Story -> Scene: Deleting a Story automatically deletes all its Scenes
+        // Story -> IntroScene (1-to-1): 
+        // Deleting a Story automatically deletes its IntroScene
         modelBuilder.Entity<Story>()
-            .HasMany(s => s.Scenes)
-            .WithOne(sc => sc.Story)
-            .HasForeignKey(sc => sc.StoryId)
+            .HasOne(s => s.IntroScene)
+            .WithOne(i => i.Story)
+            .HasForeignKey<IntroScene>(i => i.StoryId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Story -> PlayingSession: Deleting a Story automatically deletes all associated session records (as they are now meaningless)
+        // Story -> QuestionScene (1-to-many): 
+        // Deleting a Story automatically deletes all its QuestionScenes
+        modelBuilder.Entity<Story>()
+            .HasMany(s => s.QuestionScenes)
+            .WithOne(qs => qs.Story)
+            .HasForeignKey(qs => qs.StoryId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Story -> EndingScene (1-to-many): 
+        // Deleting a Story automatically deletes all its EndingScenes
+        modelBuilder.Entity<Story>()
+            .HasMany(s => s.EndingScenes)
+            .WithOne(es => es.Story)
+            .HasForeignKey(es => es.StoryId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Story -> PlayingSession (1-to-many): 
+        // Deleting a Story automatically deletes all associated PlayingSession records (as they are now meaningless)
         modelBuilder.Entity<Story>()
             .HasMany(s => s.PlayingSessions)
             .WithOne(ps => ps.Story)
             .HasForeignKey(ps => ps.StoryId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Scene -> Question (One-to-One/Zero Relationship):
-        // Deleting a Scene deletes its Question (if it has one)
-        modelBuilder.Entity<Question>()
-            .HasOne(q => q.Scene)
-            .WithOne(sc => sc.Question)
-            .HasForeignKey<Question>(q => q.SceneId)
-            .OnDelete(DeleteBehavior.Cascade);
 
-        // Question -> Answer_option (One-to-Many Relationship): 
-        // Deleting a Question automatically deletes ALL its associated AnswerOptions
-        modelBuilder.Entity<Question>()
-            .HasMany(q => q.AnswerOptions)
-            .WithOne(ao => ao.Question)
-            .HasForeignKey(ao => ao.QuestionId)
-            .OnDelete(DeleteBehavior.Cascade);
 
         // ==========================================================================
-        // 3. SCENE NAVIGATION RELATIONSHIPS (Restrict Deletion to Preserve Integrity)
-        //    A Scene can reference another Scene as its "NextScene"
-        //    We use DeleteBehavior.Restrict to prevent circular cascade deletes
-        //    If a Scene being referenced is deleted, the referencing Scene's 
-        //    NextSceneId must be manually set to NULL beforehand
+        // 3. Question SCENE NAVIGATION RELATIONSHIPS (Restrict Deletion to Preserve Integrity)
+        //    If a QuestionScene being referenced is deleted, the referencing Scene's 
+        //    NextQuestionSceneId must be manually set to NULL beforehand
         // ==========================================================================
 
-        // Scene -> NextScene (Self-referencing One-to-One/Zero Relationship):
-        // Do not cascade delete on self-referenced relationship to avoid circular cascade delete issues
-        modelBuilder.Entity<Scene>()
-            .HasOne(s => s.NextScene)
-            .WithMany() // no inverse navigation property
-            .HasForeignKey(s => s.NextSceneId)
+        // QuestionScene -> NextQuestionScene (Self-referencing One-to-One/Zero Relationship):
+        // Don’t cascade delete on self-referenced relationship to avoid circular cascade delete issues
+        modelBuilder.Entity<QuestionScene>()
+            .HasOne(qs => qs.NextQuestionScene)
+            .WithMany() // no inverse navigation
+            .HasForeignKey(qs => qs.NextQuestionSceneId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Enforce that NextSceneId is unique across all Scenes
-        modelBuilder.Entity<Scene>()
-            .HasIndex(s => s.NextSceneId)
+        // Enforce that NextQuestionSceneId is unique across all Scenes
+        modelBuilder.Entity<QuestionScene>()
+            .HasIndex(s => s.NextQuestionSceneId)
             .IsUnique();
+
+        // QuestionScene -> AnswerOptions (1-to-many)
+        // Deleting a QuestionScene automatically deletes all associated AnswerOptions
+        modelBuilder.Entity<QuestionScene>()
+            .HasMany(qs => qs.AnswerOptions)
+            .WithOne(ao => ao.QuestionScene)
+            .HasForeignKey(ao => ao.QuestionSceneId)
+            .OnDelete(DeleteBehavior.Cascade);
 
     }
 }
+
+

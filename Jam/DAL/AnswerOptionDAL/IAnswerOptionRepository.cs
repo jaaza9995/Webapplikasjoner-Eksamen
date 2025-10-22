@@ -4,18 +4,19 @@ namespace Jam.DAL.AnswerOptionDAL;
 
 public interface IAnswerOptionRepository
 {
-    Task<IEnumerable<Scene>> GetAllAnswerOptions();
+    // Read
+    Task<IEnumerable<AnswerOption>> GetAllAnswerOptions();
+    Task<IEnumerable<AnswerOption>> GetAnswerOptionByQuestionSceneId(int questionSceneId);
     Task<AnswerOption?> GetAnswerOptionById(int id);
-    Task<IEnumerable<AnswerOption>> GetAnswerOptionsByQuestionId(int questionId);
 
-    // Creation mode
-    Task CreateAnswerOption(AnswerOption answerOption);
+
+    // Create
+    Task AddAnswerOption(AnswerOption answerOption);
+
+
+    // Update
     Task UpdateAnswerOption(AnswerOption answerOption);
-    Task<bool> DeleteAnswerOption(int id);
 
-    /* Playing mode:
-        We don't need any specific methods here, and probably never will
-        AnswerOption is always dependent on Question (Question = parent of 4 AnswerOptions)
-        We never access an AnswerOption independently (always related to a Question)
-    */
+    // Delete
+    Task<bool> DeleteAnswerOption(int id);
 } 

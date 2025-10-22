@@ -1,4 +1,4 @@
-@model List<Jam.ViewModels.GameCardViewModel>
+@model Jam.ViewModels.BrowseViewModel
 
 @{
     ViewData["Title"] = "Browse page";
@@ -17,22 +17,80 @@
 @* block for adding private games by entering game code*@
 <div class="card mb-3" style="width: 18rem;">
     <div class="card-body">
-        <h5 class="card-title">For private games add game code here to access</h5>
+        <h5 class="card-title">Access a private game</h5>
 
-        <div class="d-flex justify-content-between mb-2">
-            <form method="post" asp-action="Search" asp-controller="Browse">
-            <input type="text" name="searchPrivate" placeholder="Private Game Code.." class="form-control" />
-            <button type="submit" class="btn btn-primary mt-2">Add</button>
-            </form>
+        <form method="post" asp-action="Search" asp-controller="Browse">
+            <input type="text" name="searchPrivate" placeholder="Enter Game Code.." class="form-control" />
+            <button type="submit" class="btn btn-primary mt-2">Access</button>
+        </form>
         </div>
     </div>
 </div>
 
 @* for displaying public games after searching*@
-<div class="d-flex flex-wrap gap-3">
-@foreach (var story in Model)
+@if (Model.PublicGames != null && Model.PublicGames.Any())
 {
-    <partial name="_GameCard" model="story" />
+    <div class="d-flex flex-wrap gap-3">
+        @foreach (var story in Model.PublicGames)
+        {
+            @await Html.PartialAsync("_GameCard", story, new ViewDataDictionary(ViewData)
+            {
+                { "Scale", 1.0 }
+            })
+        }
+    </div>
 }
-</div>
 
+@* Private game result (overlay, 5x bigger) *@
+@if (Model.PrivateGame != null)
+{
+    <div id="overlay" class="overlay show">
+        <div class="overlay-content">
+            @await Html.PartialAsync("_GameCard", Model.PrivateGame, new ViewDataDictionary(ViewData)
+            {
+                { "Scale", 5.0 }
+            })
+            <button class="btn btn-secondary mt-3" onclick="closeOverlay()">Close</button>
+        </div>
+    </div>
+}
+
+<!-- Overlay styles -->
+<style>
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .overlay.show {
+        display: flex;
+    }
+
+    .overlay-content {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        width: 60%;
+        max-width: 1000px;
+        box-shadow: 0 0 30px rgba(0,0,0,0.3);
+        text-align: center;
+    }
+
+    .overlay button {
+        width: 150px;
+    }
+</style>
+
+<script>
+    function closeOverlay() {
+        document.getElementById('overlay').classList.remove('show');
+    }
+</script>
