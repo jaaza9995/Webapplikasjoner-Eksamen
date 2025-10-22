@@ -26,9 +26,23 @@ public class CreateGameController : Controller
     }
 
     [HttpGet]
+    public IActionResult Index()
+    {
+        // Viser startsiden med knappen "Create new game"
+        return View();
+    }
+        
+    [HttpPost]
+    public IActionResult CreateNewGame()
+    {
+        // Når brukeren trykker på "Create new game", send dem til Create-siden
+        return RedirectToAction("CreateStoryAndIntro", "CreateGame");
+    }
+
+    [HttpGet]
     public IActionResult CreateStoryAndIntro()
     {
-        var vm = new CreateStoryAndIntroViewModel
+        var CreateStoryAndIntroVM = new CreateStoryAndIntroViewModel
         {
             DifficultyLevelOptions = Enum.GetValues(typeof(DifficultyLevel))
                 .Cast<DifficultyLevel>()
@@ -40,7 +54,7 @@ public class CreateGameController : Controller
                 .ToList()
         };
 
-        return View(vm);
+        return View(CreateStoryAndIntroVM);
     }
 
     [HttpPost]
