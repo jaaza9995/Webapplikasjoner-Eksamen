@@ -1,14 +1,13 @@
-using Microsoft.AspNetCore.Mvc;
+/*using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Jam.DAL.StoryDAL;
 using Jam.DAL.SceneDAL;
-using Jam.DAL.QuestionDAL;
 using Jam.DAL.AnswerOptionDAL;
 using Jam.DAL.PlayingSessionDAL;
 using Jam.Models;
 using Jam.Models.Enums;
 
-namespace Jam.Controllers
+namespace Jam.Controllers 
 {
     // Styrer spillflyten: start -> scene -> svar -> slutt
     public class PlayController : Controller
@@ -181,3 +180,4 @@ namespace Jam.Controllers
     }
 }
 
+*/

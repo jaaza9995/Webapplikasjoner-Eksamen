@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
 using Jam.Models.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Jam.ViewModels
 {
@@ -8,12 +9,17 @@ namespace Jam.ViewModels
     {
         // Game details
         public int StoryId { get; set; }
+        //[Required]
         public string Title { get; set; } = "";
+        //[Required]
         public string Description { get; set; } = "";
+        //[Required]
         public string Intro { get; set; } = "";
         public List<SelectListItem> DifficultyOptions { get; set; } = new();
+        //[Required]
         public DifficultyLevel DifficultyLevel { get; set; }
         public List<SelectListItem> AccessibilityOptions { get; set; } = new();
+        //[Required]
         public Accessibility Accessibility { get; set; }
        
         // Questions and answers

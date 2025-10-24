@@ -62,3 +62,4 @@ public IActionResult CreateOrEdit(CreateStoryViewModel model, string action)
     // Hvis du går frem/tilbake, last samme view igjen med oppdatert steg
     return View("Create", model);
 }
+*/

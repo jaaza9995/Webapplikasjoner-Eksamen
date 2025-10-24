@@ -16,24 +16,28 @@ public class CreateGameController : Controller
     private readonly ISceneRepository _scenes;
     private readonly IAnswerOptionRepository _answers;
     private readonly StoryDbContext _db;
+    //private readonly ILogger<CreateGameController> _logger;
 
     public CreateGameController(
         IAnswerOptionRepository answerOptionRepository,
         IStoryRepository storiesRepository,
         ISceneRepository sceneRepository,
         StoryDbContext db)
+        //ILogger<CreateGameController> logger) 
     {
         _answers = answerOptionRepository;
         _stories = storiesRepository;
         _scenes = sceneRepository;
         _db = db;
+        //_logger = logger;
     }
+
 
 
     [HttpGet]
     public IActionResult CreateIntro()
     {
-        var CreateIntroVM = new CreateStoryViewModel
+        var vm = new EditStoryViewModel
         {
             DifficultyOptions = Enum.GetValues(typeof(DifficultyLevel))
                 .Cast<DifficultyLevel>()
@@ -44,95 +48,157 @@ public class CreateGameController : Controller
                 .Select(a => new SelectListItem { Value = a.ToString(), Text = a.ToString() })
                 .ToList()
         };
-        return View("~/Views/Home/Create.cshtml", CreateIntroVM);
+        return View("~/Views/Home/Create.cshtml", vm);
     }
 
-    [HttpPost]
+
+    /*[HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateIntro(CreateStoryViewModel CreateStoryVM)
+    public async Task<IActionResult> CreateIntro(EditStoryViewModel model)
     {
         if (!ModelState.IsValid)
         {
             // repopuler dropdowns ved valideringsfeil
-            CreateStoryVM.DifficultyOptions = Enum.GetValues(typeof(DifficultyLevel))
+            model.DifficultyOptions = Enum.GetValues(typeof(DifficultyLevel))
                 .Cast<DifficultyLevel>()
                 .Select(d => new SelectListItem { Value = d.ToString(), Text = d.ToString() })
                 .ToList();
-            CreateStoryVM.AccessibilityOptions = Enum.GetValues(typeof(Accessibility))
+            model.AccessibilityOptions = Enum.GetValues(typeof(Accessibility))
                 .Cast<Accessibility>()
                 .Select(a => new SelectListItem { Value = a.ToString(), Text = a.ToString() })
                 .ToList();
 
-            return View(CreateStoryVM);
+            return View("~/Views/Home/Create.cshtml", model);
         }
 
-        // 1) Generer kode hvis spillet er privat
         string? gameCode = null;
-        if (CreateStoryVM.Accessibility == Accessibility.Private)
+        if (model.Accessibility == Accessibility.Private)
             gameCode = Guid.NewGuid().ToString("N")[..6].ToUpper();
 
-        // 2) Lagre storyen
-        var game = new Story
+        var story = new Story
         {
-            Title = CreateStoryVM.Title ?? "",
-            Description = CreateStoryVM.Description ?? "",
-            DifficultyLevel = CreateStoryVM.DifficultyLevel,
-            Accessible = CreateStoryVM.Accessibility,
+            Title = model.Title ?? "",
+            Description = model.Description ?? "",
+            DifficultyLevel = model.DifficultyLevel,
+            Accessible = model.Accessibility,
             GameCode = gameCode
         };
 
-        await _stories.AddStory(game);
+        await _stories.AddStory(story);
 
-        // 3) Gå videre til neste steg
         return RedirectToAction(nameof(CreateMultipleQuestion), new
         {
-            gameId = game.StoryId,
+            storyId = story.StoryId,
             questionIndex = 1
         });
     }
+    */
 
-
-    // GET: /CreateGame/CreateQuestion?storyId=123&questionIndex=1
-// using Jam.Models.Enums;  // bare hvis du filtrerer på SceneType andre steder
-[HttpGet]
-public async Task<IActionResult> CreateMultipleQuestion(int storyId, int questionIndex = 1)
-{
-    var qScenes = await _scenes.GetQuestionScenesByStoryId(storyId); // returnerer IEnumerable<QuestionScene>
-
-    var vm = new CreateStoryViewModel
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateOrEdit(EditStoryViewModel model, string action)
     {
-        StoryId = storyId,
-        Step = questionIndex,
-        Questions = qScenes.Select(qs =>
+        if (string.Equals(action, "Back", StringComparison.OrdinalIgnoreCase))
         {
-            // Hent lagrede svar (hvis du har AnswerOptions på QuestionScene)
-            var answers   = qs.AnswerOptions?.Select(a => a.Answer).ToList() ?? new List<string>();
-            var feedbacks = qs.AnswerOptions?.Select(a => a.FeedbackText ?? "").ToList() ?? new List<string>();
-            var correct   = qs.AnswerOptions?.Select(a => a.IsCorrect).ToList() ?? new List<bool>();
+            model.Step = Math.Max(1, model.Step - 1);
+            return View("~/Views/Home/Create.cshtml", model);
+        }
 
-            // Pad til 4 elementer (UI-en din forventer 4)
-            while (answers.Count   < 4) answers.Add("");
-            while (feedbacks.Count < 4) feedbacks.Add("");
-            while (correct.Count   < 4) correct.Add(false);
+        if (string.Equals(action, "Next", StringComparison.OrdinalIgnoreCase))
+        {
+            model.Step++;
+            return View("~/Views/Home/Create.cshtml", model);
+        }
 
-            return new CreateQuestionViewModel
+        // action == "Finish"
+        if (!ModelState.IsValid)
+        {
+            model.DifficultyOptions = Enum.GetValues(typeof(DifficultyLevel))
+                .Cast<DifficultyLevel>().Select(d => new SelectListItem { Value = d.ToString(), Text = d.ToString() }).ToList();
+            model.AccessibilityOptions = Enum.GetValues(typeof(Accessibility))
+                .Cast<Accessibility>().Select(a => new SelectListItem { Value = a.ToString(), Text = a.ToString() }).ToList();
+
+            return View("~/Views/Home/Create.cshtml", model);
+
+        if (model.IsEditMode)
+        {
+            var story = await _db.Stories.FindAsync(model.StoryId);
+            if (story == null) return NotFound();
+
+            story.Title = model.Title ?? "";
+            story.Description = model.Description ?? "";
+            story.DifficultyLevel = model.DifficultyLevel;
+
+            if (story.Accessible != model.Accessibility)
             {
-                QuestionId   = qs.QuestionSceneId,                // riktig id for redigering
-                QuestionText = qs.SceneText ?? string.Empty,      // evt. qs.QuestionText hvis det er feltet ditt
-                Answers      = answers,
-                Feedbacks    = feedbacks,
-                IsCorrect    = correct
+                story.Accessible = model.Accessibility;
+                if (story.Accessible == Accessibility.Private && string.IsNullOrEmpty(story.GameCode))
+                    story.GameCode = Guid.NewGuid().ToString("N")[..6].ToUpper();
+                if (story.Accessible == Accessibility.Public)
+                    story.GameCode = null;
+            }
+
+            await _db.SaveChangesAsync();
+            return RedirectToAction("Details", "Story", new { id = story.StoryId });
+        }
+        else
+        {
+            string? code = model.Accessibility == Accessibility.Private
+                ? Guid.NewGuid().ToString("N")[..6].ToUpper()
+                : null;
+
+            var story = new Story
+            {
+                Title = model.Title ?? "",
+                Description = model.Description ?? "",
+                DifficultyLevel = model.DifficultyLevel,
+                Accessible = model.Accessibility,
+                GameCode = code
             };
-        }).ToList()
-    };
 
-    if (vm.Questions.Count == 0)
-        vm.Questions.Add(new CreateQuestionViewModel()); // første gang: vis tomt skjema
+            await _stories.AddStory(story);
+            return RedirectToAction(nameof(CreateMultipleQuestion),
+                new { storyId = story.StoryId, questionIndex = 1 });
+        }
+    }
 
-    return View(vm);
-}
+    // GET: /CreateGame/CreateMultipleQuestion?storyId=123&questionIndex=1
+    [HttpGet]
+    public async Task<IActionResult> CreateMultipleQuestion(int storyId, int questionIndex = 1)
+        {
+            var scenes = await _scenes.GetQuestionScenesByStoryId(storyId);
 
-        
+            var vm = new CreateStoryViewModel
+            {
+                StoryId = storyId,
+                Step = questionIndex,
+                Questions = scenes.Select(qs =>
+                {
+                    var answers = qs.AnswerOptions?.Select(a => a.Answer).ToList() ?? new List<string>();
+                    var feedbacks = qs.AnswerOptions?.Select(a => a.FeedbackText ?? "").ToList() ?? new List<string>();
+                    var correct = qs.AnswerOptions?.Select(a => a.IsCorrect).ToList() ?? new List<bool>();
+
+                    while (answers.Count < 4) answers.Add("");
+                    while (feedbacks.Count < 4) feedbacks.Add("");
+                    while (correct.Count < 4) correct.Add(false);
+
+                    return new CreateQuestionViewModel
+                    {
+                        QuestionId = qs.QuestionSceneId,
+                        QuestionText = qs.SceneText ?? string.Empty,
+                        Answers = answers,
+                        Feedbacks = feedbacks,
+                        IsCorrect = correct
+                    };
+                }).ToList()
+            };
+
+            if (vm.Questions.Count == 0)
+                vm.Questions.Add(new CreateQuestionViewModel());
+
+            return View("~/Views/Home/Create.cshtml", vm);
+        }
+
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -140,73 +206,72 @@ public async Task<IActionResult> CreateMultipleQuestion(int storyId, int questio
     {
         if (model == null) return BadRequest("Ugyldig skjema.");
 
-        // Valider hvert spørsmål i modellen
-    for (int i = 0; i < model.Questions.Count; i++)
-    {
-        var q = model.Questions[i];
-
-        if (string.IsNullOrWhiteSpace(q.QuestionText))
-            ModelState.AddModelError($"Questions[{i}].QuestionText", "Spørsmål er påkrevd.");
-
-        if (q.Answers == null || q.Answers.Count != 4)
-            ModelState.AddModelError($"Questions[{i}].Answers", "Du må ha nøyaktig 4 svaralternativer.");
-
-        if (q.IsCorrect == null || q.IsCorrect.Count != 4)
-        ModelState.AddModelError($"Questions[{i}].IsCorrect", "Du må ha 4 verdier i IsCorrect-listen.");
-
-        var correctCount = q.IsCorrect.Count(c => c); // teller antall true
-        if (correctCount != 1)
-            ModelState.AddModelError($"Questions[{i}].IsCorrect", "Nøyaktig ett alternativ må være riktig.");
-
-        for (int j = 0; j < q.Answers.Count; j++)
+        // Valider alle spørsmål
+        for (int i = 0; i < model.Questions.Count; i++)
         {
-            if (string.IsNullOrWhiteSpace(q.Answers[j]))
-                ModelState.AddModelError($"Questions[{i}].Answers[{j}]", "Svartekst er påkrevd.");
+            var q = model.Questions[i];
 
-        if (string.IsNullOrWhiteSpace(q.Feedbacks[j]))
-            ModelState.AddModelError($"Questions[{i}].Feedbacks[{j}]", "Feedback-tekst er påkrevd.");
-    }
+            if (string.IsNullOrWhiteSpace(q.QuestionText))
+                ModelState.AddModelError($"Questions[{i}].QuestionText", "Spørsmål er påkrevd.");
 
-    }
+            if (q.Answers == null || q.Answers.Count != 4)
+                ModelState.AddModelError($"Questions[{i}].Answers", "Du må ha nøyaktig 4 svaralternativer.");
 
-    if (!ModelState.IsValid)
-        return View(model);
+            if (q.IsCorrect == null || q.IsCorrect.Count != 4)
+                ModelState.AddModelError($"Questions[{i}].IsCorrect", "Du må ha 4 verdier i IsCorrect-listen.");
 
-    // Lagre alle spørsmål i databasen
-    foreach (var q in model.Questions)
-    {
-        var question = new QuestionScene
-        {
-            SceneText = q.QuestionText,
-            Question = q.QuestionText,
-            StoryId = model.StoryId,
-            AnswerOptions = q.Answers.Select((a, idx) => new AnswerOption
+            var correctCount = q.IsCorrect.Count(c => c);
+            if (correctCount != 1)
+                ModelState.AddModelError($"Questions[{i}].IsCorrect", "Nøyaktig ett alternativ må være riktig.");
+
+            for (int j = 0; j < q.Answers.Count; j++)
             {
-               Answer = a,
-                FeedbackText = q.Feedbacks[idx],
-                 IsCorrect = q.IsCorrect[idx]
-            }).ToList()
-        };
-    _db.QuestionScenes.Add(question);
-    await _db.SaveChangesAsync();
-    }
+                if (string.IsNullOrWhiteSpace(q.Answers[j]))
+                    ModelState.AddModelError($"Questions[{i}].Answers[{j}]", "Svartekst er påkrevd.");
 
-        // Navigasjon videre
-        model.Step++;
-        if (string.Equals(submit, "next", StringComparison.OrdinalIgnoreCase))
-        {
-            return RedirectToAction(nameof(CreateMultipleQuestion), new { storyId = model.StoryId, questionIndex = model.Step });
+                if (string.IsNullOrWhiteSpace(q.Feedbacks[j]))
+                    ModelState.AddModelError($"Questions[{i}].Feedbacks[{j}]", "Feedback-tekst er påkrevd.");
+            }
         }
+
+        if (!ModelState.IsValid)
+            return View("~/Views/Home/Create.cshtml", model);
+
+        // Lagre alle spørsmål
+        foreach (var q in model.Questions)
+        {
+            var question = new QuestionScene
+            {
+                SceneText = q.QuestionText,
+                Question = q.QuestionText,
+                StoryId = model.StoryId,
+                AnswerOptions = q.Answers.Select((a, idx) => new AnswerOption
+                {
+                    Answer = a,
+                    FeedbackText = q.Feedbacks[idx],
+                    IsCorrect = q.IsCorrect[idx]
+                }).ToList()
+            };
+
+            _db.QuestionScenes.Add(question);
+        }
+
+        await _db.SaveChangesAsync();
+
+        // Navigasjon videre (ryddet, ingen duplisering)
+        model.Step++;
 
         if (model.Questions.Count >= 3)
         {
             return RedirectToAction(nameof(CreateEndings), new { storyId = model.StoryId });
         }
 
-        return RedirectToAction(nameof(CreateMultipleQuestion), new { storyId = model.StoryId, questionIndex = model.Step });
+        return RedirectToAction(nameof(CreateMultipleQuestion), new
+        {
+            storyId = model.StoryId,
+            questionIndex = model.Step
+        });
     }
-
-        // Neste side i flyten (vis spørsmåls-skjema)
 
     [HttpGet]
     public IActionResult CreateEndings(int storyId)
@@ -214,133 +279,125 @@ public async Task<IActionResult> CreateMultipleQuestion(int storyId, int questio
         return View(new CreateStoryViewModel { StoryId = storyId });
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteQuestion(int storyId, int questionSceneId, int questionIndex)
+    {
+        // Finn spørsmål + relaterte svaralternativer
+        var qs = await _db.QuestionScenes
+            .Include(x => x.AnswerOptions)
+            .FirstOrDefaultAsync(x => x.QuestionSceneId == questionSceneId && x.StoryId == storyId);
+
+        if (qs == null)
+        {
+            TempData["Warn"] = "Finner ikke spørsmålet.";
+            return RedirectToAction(nameof(CreateMultipleQuestion), new { storyId, questionIndex });
+        }
+
+        // Slett (EF vil slette AnswerOptions via cascade hvis konfigurert – ellers fjern dem eksplisitt)
+        //_db.AnswerOptions.RemoveRange(qs.AnswerOptions); - om det ikke er cascade delete mellom QuestionScene → AnswerOption
+        _db.QuestionScenes.Remove(qs);
+        await _db.SaveChangesAsync();
+
+        TempData["Info"] = "Spørsmålet ble slettet.";
+
+        // Juster index hvis vi slettet siste element
+        var totalEtter = await _db.QuestionScenes.CountAsync(x => x.StoryId == storyId);
+        var nextIndex = Math.Min(Math.Max(1, questionIndex), Math.Max(1, totalEtter));
+
+        return RedirectToAction(nameof(CreateMultipleQuestion), new { storyId, questionIndex = nextIndex });
+    }
+
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateEndings(CreateStoryViewModel CreateStoryVM)
-    {
-        if (string.IsNullOrWhiteSpace(CreateStoryVM.HighEnding))
-            ModelState.AddModelError(nameof(CreateStoryVM.HighEnding), "Good ending er påkrevd.");
-        if (string.IsNullOrWhiteSpace(CreateStoryVM.MediumEnding))
-            ModelState.AddModelError(nameof(CreateStoryVM.MediumEnding), "Neutral ending er påkrevd.");
-        if (string.IsNullOrWhiteSpace(CreateStoryVM.LowEnding))
-            ModelState.AddModelError(nameof(CreateStoryVM.LowEnding), "Bad ending er påkrevd.");
-
-        if (!ModelState.IsValid) return View(CreateStoryVM);
-
-
-        // Lag tre avslutningsscener
-        var high = new EndingScene
+    public async Task<IActionResult> CreateEndings(CreateStoryViewModel model)
         {
-            StoryId = CreateStoryVM.StoryId,
-            EndingType = EndingType.Good,
-            EndingText = CreateStoryVM.HighEnding
-        };
+            if (string.IsNullOrWhiteSpace(model.HighEnding))
+                ModelState.AddModelError(nameof(model.HighEnding), "Good ending er påkrevd.");
+            if (string.IsNullOrWhiteSpace(model.MediumEnding))
+                ModelState.AddModelError(nameof(model.MediumEnding), "Neutral ending er påkrevd.");
+            if (string.IsNullOrWhiteSpace(model.LowEnding))
+                ModelState.AddModelError(nameof(model.LowEnding), "Bad ending er påkrevd.");
 
-        var medium = new EndingScene
-        {
-            StoryId = CreateStoryVM.StoryId,
-            EndingType = EndingType.Neutral,
-            EndingText = CreateStoryVM.MediumEnding
-        };
+            if (!ModelState.IsValid) return View(model);
 
-        var low = new EndingScene
-        {
-            StoryId = CreateStoryVM.StoryId,
-            EndingType = EndingType.Bad,
-            EndingText = CreateStoryVM.LowEnding
-        };
+            var high = new EndingScene { StoryId = model.StoryId, EndingType = EndingType.Good, EndingText = model.HighEnding };
+            var medium = new EndingScene { StoryId = model.StoryId, EndingType = EndingType.Neutral, EndingText = model.MediumEnding };
+            var low = new EndingScene { StoryId = model.StoryId, EndingType = EndingType.Bad, EndingText = model.LowEnding };
 
-        // Legg dem til databasen via DbContext
-        _db.EndingScenes.AddRange(high, medium, low);
-        await _db.SaveChangesAsync();
+            _db.EndingScenes.AddRange(high, medium, low);
+            await _db.SaveChangesAsync();
 
-        var story = await _db.Stories.FindAsync(CreateStoryVM.StoryId);
-        if (story?.Accessible == Accessibility.Private && !string.IsNullOrEmpty(story.GameCode))
-        {
-            TempData["GameCode"] = story.GameCode;
-            return RedirectToAction(nameof(GameCreated), new { storyId = story.StoryId });
+            var story = await _db.Stories.FindAsync(model.StoryId);
+            if (story?.Accessible == Accessibility.Private && !string.IsNullOrEmpty(story.GameCode))
+            {
+                TempData["GameCode"] = story.GameCode;
+                return RedirectToAction(nameof(GameCreated), new { storyId = story.StoryId });
+            }
+
+            return RedirectToAction("Index", "Home");
         }
-
-        // Ellers send tilbake til Home som før
-        return RedirectToAction("Index", "Home");
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> GameCreated(int storyId)
-    {
-        var story = await _db.Stories.FindAsync(storyId);
-        if (story == null) return NotFound();
-
-        ViewBag.GameCode = story.GameCode;
-        ViewBag.Title = story.Title;
-        return View();
-    }
     
-    [HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> CreateOrEdit(CreateStoryViewModel model, string action)
-{
-    // Navigering mellom steg
-    if (string.Equals(action, "Back", StringComparison.OrdinalIgnoreCase))
+    /*[HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateOrEdit(CreateStoryViewModel model, string action)
     {
-        model.Step = Math.Max(1, model.Step - 1);
-        return View("~/Views/Home/Create.cshtml", model);
-    }
-    if (string.Equals(action, "Next", StringComparison.OrdinalIgnoreCase))
-    {
-        model.Step++;
-        return View("~/Views/Home/Create.cshtml", model);
-    }
-
-    // Finish = lagre
-    if (!ModelState.IsValid)
-        return View("~/Views/Home/Create.cshtml", model);
-
-    if (model is EditStoryViewModel { IsEditMode: true })
-    {
-        // UPDATE
-        var story = await _db.Stories.FindAsync(model.StoryId);
-        if (story == null) return NotFound();
-
-        story.Title = model.Title ?? "";
-        story.Description = model.Description ?? "";
-        //story.Intro = model.Intro ?? "";
-        story.DifficultyLevel = model.DifficultyLevel;
-        // Håndter endring av public/private + kode
-        if (story.Accessible != model.Accessibility)
+        if (string.Equals(action, "Back", StringComparison.OrdinalIgnoreCase))
         {
-            story.Accessible = model.Accessibility;
-            if (story.Accessible == Accessibility.Private && string.IsNullOrEmpty(story.GameCode))
-                story.GameCode = Guid.NewGuid().ToString("N")[..6].ToUpper();
-            if (story.Accessible == Accessibility.Public)
-                story.GameCode = null; // valgfritt
+            model.Step = Math.Max(1, model.Step - 1);
+            return View("~/Views/Home/Create.cshtml", model);
+        }
+        if (string.Equals(action, "Next", StringComparison.OrdinalIgnoreCase))
+        {
+            model.Step++;
+            return View("~/Views/Home/Create.cshtml", model);
         }
 
-        await _db.SaveChangesAsync();
-        return RedirectToAction("Details", "Story", new { id = story.StoryId });
-    }
-    else
-    {
-        // CREATE
-        string? code = null;
-        if (model.Accessibility == Accessibility.Private)
-            code = Guid.NewGuid().ToString("N")[..6].ToUpper();
+        if (!ModelState.IsValid)
+            return View("~/Views/Home/Create.cshtml", model);
 
-        var story = new Story
+        if (model is EditStoryViewModel { IsEditMode: true })
         {
-            Title = model.Title ?? "",
-            Description = model.Description ?? "",
-            //IntroScene = model.intro ?? "",
-            DifficultyLevel = model.DifficultyLevel,
-            Accessible = model.Accessibility,
-            GameCode = code
-        };
+            var story = await _db.Stories.FindAsync(model.StoryId);
+            if (story == null) return NotFound();
 
-        await _stories.AddStory(story);
-        // Videre til spørsmål-flyten din
-        return RedirectToAction(nameof(CreateMultipleQuestion), new { storyId = story.StoryId, questionIndex = 1 });
+            story.Title = model.Title ?? "";
+            story.Description = model.Description ?? "";
+            story.DifficultyLevel = model.DifficultyLevel;
+            story.Accessible = model.Accessibility;
+            story.IntroScene = model.Intro ?? "";   
+            
+
+            if (story.Accessible != model.Accessibility)
+            {
+                story.Accessible = model.Accessibility;
+                if (story.Accessible == Accessibility.Private && string.IsNullOrEmpty(story.GameCode))
+                    story.GameCode = Guid.NewGuid().ToString("N")[..6].ToUpper();
+                if (story.Accessible == Accessibility.Public)
+                    story.GameCode = null;
+            }
+
+            await _db.SaveChangesAsync();
+            return RedirectToAction("Details", "Story", new { id = story.StoryId });
+        }
+        else
+        {
+            string? code = null;
+            if (model.Accessibility == Accessibility.Private)
+                code = Guid.NewGuid().ToString("N")[..6].ToUpper();
+
+            var story = new Story
+            {
+                Title = model.Title ?? "",
+                Description = model.Description ?? "",
+                DifficultyLevel = model.DifficultyLevel,
+                Accessible = model.Accessibility,
+                GameCode = code
+            };
+
+            await _stories.AddStory(story);
+            return RedirectToAction(nameof(CreateMultipleQuestion), new { storyId = story.StoryId, questionIndex = 1 });
+        }*/
     }
-}
-
 }
