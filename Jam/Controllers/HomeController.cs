@@ -3,6 +3,9 @@ using Jam.DAL.StoryDAL;
 using Jam.DAL.UserDAL;
 using Jam.ViewModels;
 using Jam.Models.Enums;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Jam.DAL;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace Jam.Controllers
@@ -11,14 +14,22 @@ namespace Jam.Controllers
     {
         private readonly IStoryRepository _stories;
         private readonly IUserRepository _users;
+        private readonly StoryDbContext _db;
 
-        public HomeController(IStoryRepository stories, IUserRepository users)
+        public HomeController(IStoryRepository stories, IUserRepository users, StoryDbContext db)
         {
             _stories = stories;
             _users = users;
+            _db = db;
         }
         public async Task<IActionResult> Index()
         {
+            var yourGames = await _db.Stories
+            .Where(s => s.UserId == 1)         // bytt til innlogget bruker senere
+            .Include(s => s.QuestionScenes)
+            .AsNoTracking()
+            .ToListAsync();
+            
             int userId = 1;
 
             var user = await _users.GetUserById(userId);
@@ -39,8 +50,5 @@ namespace Jam.Controllers
             return View(model);           // ← VIKTIG: send inn modellen
         }
         
-        
-
-
     }
 }

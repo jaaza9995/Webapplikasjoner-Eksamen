@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Collections.Generic;
 using Jam.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
@@ -9,19 +8,18 @@ namespace Jam.ViewModels
     {
         // Game details
         public int StoryId { get; set; }
-        //[Required]
-        public string Title { get; set; } = "";
-        //[Required]
-        public string Description { get; set; } = "";
-        //[Required]
-        public string Intro { get; set; } = "";
-        public List<SelectListItem> DifficultyOptions { get; set; } = new();
-        //[Required]
+        [Required] public string Title { get; set; } = "";
+        [Required] public string Description { get; set; } = "";
+        [Required] public string Intro { get; set; } = "";
+
+        public List<SelectListItem> DifficultyOptions { get; set; } = default!;
+        
+        [Required(ErrorMessage = "Please select a difficulty level.")]
         public DifficultyLevel DifficultyLevel { get; set; }
         public List<SelectListItem> AccessibilityOptions { get; set; } = new();
-        //[Required]
-        public Accessibility Accessibility { get; set; }
-       
+        [Required(ErrorMessage = "Please select a privacy option.")]
+        public Accessibility Accessibility { get; set; } 
+
         // Questions and answers
         public List<CreateQuestionViewModel> Questions { get; set; } = new();
 
@@ -32,14 +30,20 @@ namespace Jam.ViewModels
 
         // Current step in the process
         public int Step { get; set; } = 1;
+        public string? GameCode { get; set; } 
     }
 
     public class CreateQuestionViewModel
     {
+        
         public int QuestionId { get; set; }
-        public string QuestionText { get; set; } = "";
-        public List<string> Answers { get; set; } = new() { "", "", "", "" };
-        public List<string> Feedbacks { get; set; } = new() { "", "", "", "" };
-        public List<bool> IsCorrect { get; set; } = new() { false, false, false, false };
+
+        [Required] public string QuestionText { get; set; } = "";
+
+        [Required] public List<string> Answers { get; set; } = new() { "", "", "", "" };
+
+        [Required] public List<string> Feedbacks { get; set; } = new() { "", "", "", "" };
+
+        [Required] public List<bool> IsCorrect { get; set; } = new() { false, false, false, false };
     }
 }

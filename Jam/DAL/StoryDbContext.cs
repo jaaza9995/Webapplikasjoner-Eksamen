@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Jam.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
 
 namespace Jam.DAL;
 
-public class StoryDbContext : DbContext
+public class StoryDbContext : IdentityDbContext<User>
 {
     public StoryDbContext(DbContextOptions<StoryDbContext> options) : base(options)
     {
@@ -56,6 +58,11 @@ public class StoryDbContext : DbContext
             .WithOne(i => i.Story)
             .HasForeignKey<IntroScene>(i => i.StoryId)
             .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Story>()
+            .HasIndex(s => s.GameCode)
+            .IsUnique()
+            .HasFilter("[GameCode] IS NOT NULL"); // SQLite/SQL Server filter
 
         // Story -> QuestionScene (1-to-many): 
         // Deleting a Story automatically deletes all its QuestionScenes

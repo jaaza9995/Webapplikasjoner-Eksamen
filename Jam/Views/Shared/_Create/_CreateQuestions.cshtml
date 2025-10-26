@@ -1,33 +1,36 @@
-@model Jam.ViewModels.CreateStoryViewModel
+@model Jam.ViewModels.EditStoryViewModel
 
 <h4>Questions</h4>
 
+
 @for (int i = 0; i < Model.Questions.Count; i++)
 {
-    // Section for Questions
     <div class="card p-3 mb-3 shadow-sm">
+
         <div class="form-group mb-2">
-            <label>Question <span class="text-danger">*</span></label>
+            <label>Question @(i + 1) <span class="text-danger">*</span></label>
             <input asp-for="Questions[@i].QuestionText" class="form-control" placeholder="Write your question here..." />
             <span asp-validation-for="Questions[@i].QuestionText" class="text-danger"></span>
         </div>
 
-        <!--Section for Answer Options -->
         <h6 class="mt-3">Answer Options <small>(check off the correct answer)</small></h6>
+
         @for (int a = 0; a < Model.Questions[i].Answers.Count; a++)
         {
             <div class="form-group mb-2">
-                <label>Answers <span class="text-danger">*</span></label>
+                <label>Answer @(a + 1) <span class="text-danger">*</span></label>
                 <div class="d-flex align-items-center gap-2">
                     <input asp-for="Questions[@i].Answers[@a]" class="form-control" placeholder="Answer option @(a + 1)" />
                     <input type="checkbox" asp-for="Questions[@i].IsCorrect[@a]" class="form-check-input" title="Mark as correct" />
+                    <span asp-validation-for="Questions[@i].IsCorrect[@a]" class="text-danger"></span>
                 </div>
                 <span asp-validation-for="Questions[@i].Answers[@a]" class="text-danger"></span>
             </div>
         }
 
+        @* Gruppemelding (f.eks. “Exactly one answer…”) *@
+        <span asp-validation-for="Questions[@i].IsCorrect" class="text-danger"></span>
 
-        <!-- Section for Feedback -->
         <h6 class="mt-4">Feedback</h6>
         @for (int a = 0; a < Model.Questions[i].Feedbacks.Count; a++)
         {
@@ -38,12 +41,30 @@
             </div>
         }
 
-
-        <!-- Delete Question Button -->
-        <button type="button" class="btn btn-danger mt-2">Delete Question</button>
+        @* to delete a single question*@
+        <button type="submit"
+                class="btn btn-danger"
+                formaction="@Url.Action("DeleteQuestionInline","CreateGame")"
+                formmethod="post"
+                name="deleteIndex"
+                value="@i"
+                formnovalidate>
+            Delete Question
+        </button>
     </div>
-}
 
-<!-- Add New Question Button -->
-<button type="button" class="btn btn-success mt-3">Add Question</button>
+@* For å legge til flere spørsmål *@
+@* … felter for Questions[i] … *@
+
+<div class="mt-2">
+    <button type="submit"
+            name="action"
+            value="AddQuestion"
+            class="btn btn-outline-primary">
+        Add question
+    </button>
+    <small class="text-muted ms-2">Add at least 1 question</small>
+</div>
+
+}
 

@@ -32,21 +32,13 @@
                 <strong>Highscore:</strong> @Model.Highscore
             </div>
         }
-<div class="d-flex justify-content-between">
+        <div class="d-flex justify-content-between">
             @if(Model.CardType.ToString() == "MyGames")
             {
-                // åpner edit side til det spillet
-                <form asp-controller="CreateGame" asp-action="NewGame" method="get">
-                    <input type="hidden" name="id" value="@Model.StoryId" />
-                    <button type="submit" class="btn btn-secondary">Edit</button>
-                </form>
+                <a asp-controller="CreateGame" asp-action="CreateOrEdit" class="btn btn-light">Edit</a>
             }
-            <button class="btn btn-primary">Play</button>
 
-            <form asp-controller="EditMyGame" asp-action="EditIntro" method="get">
-                <input type="hidden" name="id" value="@Model.StoryId" />
-                <button type="submit" class="btn btn-secondary">Edit</button>
-            </form>
+            <a asp-controller="PlayingSession" asp-action="Play" class="btn btn-dark">Play</a>
         </div>
     </div>
 </div>

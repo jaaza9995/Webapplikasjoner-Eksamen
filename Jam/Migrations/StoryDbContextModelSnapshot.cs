@@ -15,7 +15,7 @@ namespace Jam.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.20");
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.21");
 
             modelBuilder.Entity("Jam.Models.AnswerOption", b =>
                 {
@@ -27,21 +27,65 @@ namespace Jam.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsCorrect")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("QuestionId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("SceneText")
+                    b.Property<string>("FeedbackText")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsCorrect")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("QuestionSceneId")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("AnswerOptionId");
 
-                    b.HasIndex("QuestionId");
+                    b.HasIndex("QuestionSceneId");
 
                     b.ToTable("AnswerOptions");
+                });
+
+            modelBuilder.Entity("Jam.Models.EndingScene", b =>
+                {
+                    b.Property<int>("EndingSceneId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("EndingText")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("EndingType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("StoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("EndingSceneId");
+
+                    b.HasIndex("StoryId");
+
+                    b.ToTable("EndingScenes");
+                });
+
+            modelBuilder.Entity("Jam.Models.IntroScene", b =>
+                {
+                    b.Property<int>("IntroSceneId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("IntroText")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("StoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("IntroSceneId");
+
+                    b.HasIndex("StoryId")
+                        .IsUnique();
+
+                    b.ToTable("IntroScenes");
                 });
 
             modelBuilder.Entity("Jam.Models.PlayingSession", b =>
@@ -54,6 +98,9 @@ namespace Jam.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("CurrentSceneId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("CurrentSceneType")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("EndTime")
@@ -76,8 +123,6 @@ namespace Jam.Migrations
 
                     b.HasKey("PlayingSessionId");
 
-                    b.HasIndex("CurrentSceneId");
-
                     b.HasIndex("StoryId");
 
                     b.HasIndex("UserId");
@@ -85,54 +130,34 @@ namespace Jam.Migrations
                     b.ToTable("PlayingSessions");
                 });
 
-            modelBuilder.Entity("Jam.Models.Question", b =>
+            modelBuilder.Entity("Jam.Models.QuestionScene", b =>
                 {
-                    b.Property<int>("QuestionId")
+                    b.Property<int>("QuestionSceneId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("QuestionText")
+                    b.Property<int?>("NextQuestionSceneId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Question")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("SceneId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("QuestionId");
-
-                    b.HasIndex("SceneId")
-                        .IsUnique();
-
-                    b.ToTable("Questions");
-                });
-
-            modelBuilder.Entity("Jam.Models.Scene", b =>
-                {
-                    b.Property<int>("SceneId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("NextSceneId")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("SceneText")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("SceneType")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("StoryId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("SceneId");
+                    b.HasKey("QuestionSceneId");
 
-                    b.HasIndex("NextSceneId")
+                    b.HasIndex("NextQuestionSceneId")
                         .IsUnique();
 
                     b.HasIndex("StoryId");
 
-                    b.ToTable("Scenes");
+                    b.ToTable("QuestionScenes");
                 });
 
             modelBuilder.Entity("Jam.Models.Story", b =>
@@ -143,9 +168,6 @@ namespace Jam.Migrations
 
                     b.Property<int>("Accessible")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("Code")
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -163,6 +185,9 @@ namespace Jam.Migrations
                     b.Property<int>("Finished")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("GameCode")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("Played")
                         .HasColumnType("INTEGER");
 
@@ -174,6 +199,10 @@ namespace Jam.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("StoryId");
+
+                    b.HasIndex("GameCode")
+                        .IsUnique()
+                        .HasFilter("[GameCode] IS NOT NULL");
 
                     b.HasIndex("UserId");
 
@@ -210,23 +239,233 @@ namespace Jam.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex");
+
+                    b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens", (string)null);
+                });
+
             modelBuilder.Entity("Jam.Models.AnswerOption", b =>
                 {
-                    b.HasOne("Jam.Models.Question", "Question")
+                    b.HasOne("Jam.Models.QuestionScene", "QuestionScene")
                         .WithMany("AnswerOptions")
-                        .HasForeignKey("QuestionId")
+                        .HasForeignKey("QuestionSceneId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Question");
+                    b.Navigation("QuestionScene");
+                });
+
+            modelBuilder.Entity("Jam.Models.EndingScene", b =>
+                {
+                    b.HasOne("Jam.Models.Story", "Story")
+                        .WithMany("EndingScenes")
+                        .HasForeignKey("StoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Story");
+                });
+
+            modelBuilder.Entity("Jam.Models.IntroScene", b =>
+                {
+                    b.HasOne("Jam.Models.Story", "Story")
+                        .WithOne("IntroScene")
+                        .HasForeignKey("Jam.Models.IntroScene", "StoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Story");
                 });
 
             modelBuilder.Entity("Jam.Models.PlayingSession", b =>
                 {
-                    b.HasOne("Jam.Models.Scene", "CurrentScene")
-                        .WithMany()
-                        .HasForeignKey("CurrentSceneId");
-
                     b.HasOne("Jam.Models.Story", "Story")
                         .WithMany("PlayingSessions")
                         .HasForeignKey("StoryId")
@@ -238,38 +477,25 @@ namespace Jam.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.Navigation("CurrentScene");
-
                     b.Navigation("Story");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Jam.Models.Question", b =>
+            modelBuilder.Entity("Jam.Models.QuestionScene", b =>
                 {
-                    b.HasOne("Jam.Models.Scene", "Scene")
-                        .WithOne("Question")
-                        .HasForeignKey("Jam.Models.Question", "SceneId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Scene");
-                });
-
-            modelBuilder.Entity("Jam.Models.Scene", b =>
-                {
-                    b.HasOne("Jam.Models.Scene", "NextScene")
+                    b.HasOne("Jam.Models.QuestionScene", "NextQuestionScene")
                         .WithMany()
-                        .HasForeignKey("NextSceneId")
+                        .HasForeignKey("NextQuestionSceneId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Jam.Models.Story", "Story")
-                        .WithMany("Scenes")
+                        .WithMany("QuestionScenes")
                         .HasForeignKey("StoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("NextScene");
+                    b.Navigation("NextQuestionScene");
 
                     b.Navigation("Story");
                 });
@@ -284,21 +510,72 @@ namespace Jam.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Jam.Models.Question", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Jam.Models.QuestionScene", b =>
                 {
                     b.Navigation("AnswerOptions");
                 });
 
-            modelBuilder.Entity("Jam.Models.Scene", b =>
-                {
-                    b.Navigation("Question");
-                });
-
             modelBuilder.Entity("Jam.Models.Story", b =>
                 {
+                    b.Navigation("EndingScenes");
+
+                    b.Navigation("IntroScene")
+                        .IsRequired();
+
                     b.Navigation("PlayingSessions");
 
-                    b.Navigation("Scenes");
+                    b.Navigation("QuestionScenes");
                 });
 
             modelBuilder.Entity("Jam.Models.User", b =>

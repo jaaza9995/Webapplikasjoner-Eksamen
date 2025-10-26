@@ -1,0 +1,144 @@
+2025-10-26 20:16:18.675 +01:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+2025-10-26 20:16:18.690 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+2025-10-26 20:16:18.697 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+2025-10-26 20:16:18.718 +01:00 [INF] No migrations were applied. The database is already up to date.
+2025-10-26 20:16:18.855 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM "Users" AS "u")
+2025-10-26 20:16:18.913 +01:00 [INF] User profile is available. Using '/Users/jaraazad/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+2025-10-26 20:16:19.316 +01:00 [INF] Now listening on: https://localhost:7286
+2025-10-26 20:16:19.345 +01:00 [INF] Now listening on: http://localhost:5115
+2025-10-26 20:16:19.356 +01:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-26 20:16:19.362 +01:00 [INF] Hosting environment: Development
+2025-10-26 20:16:19.363 +01:00 [INF] Content root path: /Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam
+2025-10-26 20:16:19.703 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5115/ - null null
+2025-10-26 20:16:19.714 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5115/ - 307 0 null 13.0285ms
+2025-10-26 20:16:19.782 +01:00 [INF] Request starting HTTP/2 GET https://localhost:7286/ - null null
+2025-10-26 20:16:19.808 +01:00 [INF] Executing endpoint 'Jam.Controllers.HomeController.Index (Jam)'
+2025-10-26 20:16:19.820 +01:00 [INF] Route matched with {action = "Index", controller = "Home", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index() on controller Jam.Controllers.HomeController (Jam).
+2025-10-26 20:16:19.929 +01:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT "s"."StoryId", "s"."Accessible", "s"."Description", "s"."DifficultyLevel", "s"."Dnf", "s"."Failed", "s"."Finished", "s"."GameCode", "s"."Played", "s"."Title", "s"."UserId", "q"."QuestionSceneId", "q"."NextQuestionSceneId", "q"."Question", "q"."SceneText", "q"."StoryId"
+FROM "Stories" AS "s"
+LEFT JOIN "QuestionScenes" AS "q" ON "s"."StoryId" = "q"."StoryId"
+WHERE "s"."UserId" = 1
+ORDER BY "s"."StoryId"
+2025-10-26 20:16:19.990 +01:00 [INF] Executed DbCommand (3ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT "u"."UserId", "u"."Email", "u"."Firstname", "u"."Lastname", "u"."PasswordHash", "u"."Username"
+FROM "Users" AS "u"
+WHERE "u"."UserId" = @__p_0
+LIMIT 1
+2025-10-26 20:16:20.053 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT "s"."StoryId", "s"."Accessible", "s"."Description", "s"."DifficultyLevel", "s"."Dnf", "s"."Failed", "s"."Finished", "s"."GameCode", "s"."Played", "s"."Title", "s"."UserId"
+FROM "Stories" AS "s"
+WHERE "s"."UserId" = @__userId_0
+2025-10-26 20:16:20.109 +01:00 [INF] Executing ViewResult, running view Index.
+2025-10-26 20:16:20.211 +01:00 [INF] Executed ViewResult - view Index executed in 91.3234ms.
+2025-10-26 20:16:20.213 +01:00 [INF] Executed action Jam.Controllers.HomeController.Index (Jam) in 392.3308ms
+2025-10-26 20:16:20.213 +01:00 [INF] Executed endpoint 'Jam.Controllers.HomeController.Index (Jam)'
+2025-10-26 20:16:20.240 +01:00 [INF] Request finished HTTP/2 GET https://localhost:7286/ - 200 null text/html; charset=utf-8 457.1869ms
+2025-10-26 20:16:23.064 +01:00 [INF] Request starting HTTP/2 GET https://localhost:7286/User/UserInfo - null null
+2025-10-26 20:16:23.072 +01:00 [INF] Request finished HTTP/2 GET https://localhost:7286/User/UserInfo - 404 0 null 8.3505ms
+2025-10-26 20:16:23.073 +01:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localhost:7286/User/UserInfo, Response status code: 404
+2025-10-26 20:16:25.340 +01:00 [INF] Request starting HTTP/2 GET https://localhost:7286/CreateGame/Create - null null
+2025-10-26 20:16:25.346 +01:00 [INF] Executing endpoint 'Jam.Controllers.CreateGameController.Create (Jam)'
+2025-10-26 20:16:25.350 +01:00 [INF] Route matched with {action = "Create", controller = "CreateGame", page = "", area = ""}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Create() on controller Jam.Controllers.CreateGameController (Jam).
+2025-10-26 20:16:25.396 +01:00 [INF] Accessing expired session, Key:80b67d39-1ccb-804c-bc0f-9f114fbcf1c6
+2025-10-26 20:16:25.397 +01:00 [INF] Executing ViewResult, running view Create.
+2025-10-26 20:16:25.511 +01:00 [INF] Executed action Jam.Controllers.CreateGameController.Create (Jam) in 160.4738ms
+2025-10-26 20:16:25.511 +01:00 [INF] Executed endpoint 'Jam.Controllers.CreateGameController.Create (Jam)'
+2025-10-26 20:16:25.513 +01:00 [INF] Session started; Key:80b67d39-1ccb-804c-bc0f-9f114fbcf1c6, Id:5c8a2ee7-0a22-081c-2cfc-c568e163f0f4
+2025-10-26 20:16:25.527 +01:00 [ERR] An unhandled exception has occurred while executing the request.
+System.InvalidOperationException: RenderSectionAsync invocation in '/Views/Shared/_Layout.cshtml' is invalid. The section 'Scripts' has already been rendered.
+   at Microsoft.AspNetCore.Mvc.Razor.RazorPage.RenderSectionAsyncCore(String sectionName, Boolean required)
+   at Microsoft.AspNetCore.Mvc.Razor.RazorPage.RenderSection(String name, Boolean required)
+   at AspNetCoreGeneratedDocument.Views_Shared__Layout.<ExecuteAsync>b__22_1()
+   at Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext.SetOutputContentAsync()
+   at AspNetCoreGeneratedDocument.Views_Shared__Layout.ExecuteAsync()
+   at Microsoft.AspNetCore.Mvc.Razor.RazorView.RenderPageCoreAsync(IRazorPage page, ViewContext context)
+   at Microsoft.AspNetCore.Mvc.Razor.RazorView.RenderPageAsync(IRazorPage page, ViewContext context, Boolean invokeViewStarts)
+   at Microsoft.AspNetCore.Mvc.Razor.RazorView.RenderLayoutAsync(ViewContext context, ViewBufferTextWriter bodyWriter)
+   at Microsoft.AspNetCore.Mvc.Razor.RazorView.RenderAsync(ViewContext context)
+   at Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ExecuteAsync(ViewContext viewContext, String contentType, Nullable`1 statusCode)
+   at Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ExecuteAsync(ViewContext viewContext, String contentType, Nullable`1 statusCode)
+   at Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ExecuteAsync(ActionContext actionContext, IView view, ViewDataDictionary viewData, ITempDataDictionary tempData, String contentType, Nullable`1 statusCode)
+   at Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor.ExecuteAsync(ActionContext context, ViewResult result)
+   at Microsoft.AspNetCore.Mvc.ViewResult.ExecuteResultAsync(ActionContext context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeNextResultFilterAsync>g__Awaited|30_0[TFilter,TFilterAsync](ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResultExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.ResultNext[TFilter,TFilterAsync](State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeResultFilters()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeNextResourceFilter>g__Awaited|25_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResourceExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeFilterPipelineAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+2025-10-26 20:16:25.539 +01:00 [INF] Request finished HTTP/2 GET https://localhost:7286/CreateGame/Create - 500 null text/html; charset=utf-8 199.4066ms
+2025-10-26 20:16:27.570 +01:00 [INF] Request starting HTTP/2 GET https://localhost:7286/Identity/Account/Login - null null
+2025-10-26 20:16:27.574 +01:00 [INF] Executing endpoint '/Account/Login'
+2025-10-26 20:16:27.595 +01:00 [INF] Route matched with {page = "/Account/Login", area = "Identity", action = "", controller = ""}. Executing page /Account/Login
+2025-10-26 20:16:27.599 +01:00 [INF] Executed page /Account/Login in 3.0352ms
+2025-10-26 20:16:27.599 +01:00 [INF] Executed endpoint '/Account/Login'
+2025-10-26 20:16:27.602 +01:00 [ERR] An unhandled exception has occurred while executing the request.
+System.InvalidOperationException: Unable to resolve service for type 'Microsoft.AspNetCore.Identity.SignInManager`1[Jam.Models.User]' while attempting to activate 'Jam.Areas.Identity.Pages.Account.LoginModel'.
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.ThrowHelperUnableToResolveService(Type type, Type requiredBy)
+   at lambda_method225(Closure, IServiceProvider, Object[])
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.DefaultPageModelFactoryProvider.<>c__DisplayClass3_0.<CreateModelFactory>b__0(PageContext pageContext)
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.CreateInstance()
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.InvokeInnerFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeNextResourceFilter>g__Awaited|25_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResourceExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeFilterPipelineAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+2025-10-26 20:16:27.658 +01:00 [INF] Request finished HTTP/2 GET https://localhost:7286/Identity/Account/Login - 500 null text/html; charset=utf-8 109.5009ms
+2025-10-26 20:16:33.241 +01:00 [INF] Request starting HTTP/2 GET https://localhost:7286/Identity/Account/Register - null null
+2025-10-26 20:16:33.250 +01:00 [INF] Executing endpoint '/Account/Register'
+2025-10-26 20:16:33.271 +01:00 [INF] Route matched with {page = "/Account/Register", area = "Identity", action = "", controller = ""}. Executing page /Account/Register
+2025-10-26 20:16:33.273 +01:00 [INF] Executed page /Account/Register in 1.6725ms
+2025-10-26 20:16:33.273 +01:00 [INF] Executed endpoint '/Account/Register'
+2025-10-26 20:16:33.276 +01:00 [ERR] An unhandled exception has occurred while executing the request.
+System.InvalidOperationException: Unable to resolve service for type 'Microsoft.AspNetCore.Identity.UserManager`1[Jam.Models.User]' while attempting to activate 'Jam.Areas.Identity.Pages.Account.RegisterModel'.
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.ThrowHelperUnableToResolveService(Type type, Type requiredBy)
+   at lambda_method233(Closure, IServiceProvider, Object[])
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.DefaultPageModelFactoryProvider.<>c__DisplayClass3_0.<CreateModelFactory>b__0(PageContext pageContext)
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.CreateInstance()
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageActionInvoker.InvokeInnerFilterAsync()
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeNextResourceFilter>g__Awaited|25_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResourceExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeFilterPipelineAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+2025-10-26 20:16:33.307 +01:00 [INF] Request finished HTTP/2 GET https://localhost:7286/Identity/Account/Register - 500 null text/html; charset=utf-8 113.307ms

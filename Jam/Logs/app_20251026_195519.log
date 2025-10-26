@@ -1,0 +1,479 @@
+2025-10-26 19:55:19.924 +01:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+PRAGMA journal_mode = 'wal';
+2025-10-26 19:55:19.989 +01:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "__EFMigrationsHistory" (
+    "MigrationId" TEXT NOT NULL CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY,
+    "ProductVersion" TEXT NOT NULL
+);
+2025-10-26 19:55:19.995 +01:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+2025-10-26 19:55:19.998 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+2025-10-26 19:55:20.018 +01:00 [INF] Applying migration '20251009114217_InitDb'.
+2025-10-26 19:55:20.041 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "Users" (
+    "UserId" INTEGER NOT NULL CONSTRAINT "PK_Users" PRIMARY KEY AUTOINCREMENT,
+    "Firstname" TEXT NOT NULL,
+    "Lastname" TEXT NOT NULL,
+    "Email" TEXT NULL,
+    "Username" TEXT NOT NULL,
+    "PasswordHash" TEXT NOT NULL
+);
+2025-10-26 19:55:20.042 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "Stories" (
+    "StoryId" INTEGER NOT NULL CONSTRAINT "PK_Stories" PRIMARY KEY AUTOINCREMENT,
+    "Title" TEXT NOT NULL,
+    "Description" TEXT NOT NULL,
+    "DifficultyLevel" INTEGER NOT NULL,
+    "Accessible" INTEGER NOT NULL,
+    "Code" TEXT NULL,
+    "Played" INTEGER NOT NULL,
+    "Finished" INTEGER NOT NULL,
+    "Failed" INTEGER NOT NULL,
+    "Dnf" INTEGER NOT NULL,
+    "UserId" INTEGER NULL,
+    CONSTRAINT "FK_Stories_Users_UserId" FOREIGN KEY ("UserId") REFERENCES "Users" ("UserId") ON DELETE SET NULL
+);
+2025-10-26 19:55:20.043 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "Scenes" (
+    "SceneId" INTEGER NOT NULL CONSTRAINT "PK_Scenes" PRIMARY KEY AUTOINCREMENT,
+    "SceneType" INTEGER NOT NULL,
+    "SceneText" TEXT NOT NULL,
+    "NextSceneId" INTEGER NULL,
+    "StoryId" INTEGER NOT NULL,
+    CONSTRAINT "FK_Scenes_Scenes_NextSceneId" FOREIGN KEY ("NextSceneId") REFERENCES "Scenes" ("SceneId") ON DELETE RESTRICT,
+    CONSTRAINT "FK_Scenes_Stories_StoryId" FOREIGN KEY ("StoryId") REFERENCES "Stories" ("StoryId") ON DELETE CASCADE
+);
+2025-10-26 19:55:20.043 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "PlayingSessions" (
+    "PlayingSessionId" INTEGER NOT NULL CONSTRAINT "PK_PlayingSessions" PRIMARY KEY AUTOINCREMENT,
+    "StartTime" TEXT NOT NULL,
+    "EndTime" TEXT NULL,
+    "Score" INTEGER NOT NULL,
+    "MaxScore" INTEGER NOT NULL,
+    "CurrentLevel" INTEGER NOT NULL,
+    "CurrentSceneId" INTEGER NULL,
+    "StoryId" INTEGER NOT NULL,
+    "UserId" INTEGER NULL,
+    CONSTRAINT "FK_PlayingSessions_Scenes_CurrentSceneId" FOREIGN KEY ("CurrentSceneId") REFERENCES "Scenes" ("SceneId"),
+    CONSTRAINT "FK_PlayingSessions_Stories_StoryId" FOREIGN KEY ("StoryId") REFERENCES "Stories" ("StoryId") ON DELETE CASCADE,
+    CONSTRAINT "FK_PlayingSessions_Users_UserId" FOREIGN KEY ("UserId") REFERENCES "Users" ("UserId") ON DELETE SET NULL
+);
+2025-10-26 19:55:20.044 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "Questions" (
+    "QuestionId" INTEGER NOT NULL CONSTRAINT "PK_Questions" PRIMARY KEY AUTOINCREMENT,
+    "QuestionText" TEXT NOT NULL,
+    "SceneId" INTEGER NOT NULL,
+    CONSTRAINT "FK_Questions_Scenes_SceneId" FOREIGN KEY ("SceneId") REFERENCES "Scenes" ("SceneId") ON DELETE CASCADE
+);
+2025-10-26 19:55:20.045 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "AnswerOptions" (
+    "AnswerOptionId" INTEGER NOT NULL CONSTRAINT "PK_AnswerOptions" PRIMARY KEY AUTOINCREMENT,
+    "Answer" TEXT NOT NULL,
+    "SceneText" TEXT NOT NULL,
+    "IsCorrect" INTEGER NOT NULL,
+    "QuestionId" INTEGER NOT NULL,
+    CONSTRAINT "FK_AnswerOptions_Questions_QuestionId" FOREIGN KEY ("QuestionId") REFERENCES "Questions" ("QuestionId") ON DELETE CASCADE
+);
+2025-10-26 19:55:20.046 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "IX_AnswerOptions_QuestionId" ON "AnswerOptions" ("QuestionId");
+2025-10-26 19:55:20.046 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "IX_PlayingSessions_CurrentSceneId" ON "PlayingSessions" ("CurrentSceneId");
+2025-10-26 19:55:20.047 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "IX_PlayingSessions_StoryId" ON "PlayingSessions" ("StoryId");
+2025-10-26 19:55:20.049 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "IX_PlayingSessions_UserId" ON "PlayingSessions" ("UserId");
+2025-10-26 19:55:20.116 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX "IX_Questions_SceneId" ON "Questions" ("SceneId");
+2025-10-26 19:55:20.125 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX "IX_Scenes_NextSceneId" ON "Scenes" ("NextSceneId");
+2025-10-26 19:55:20.137 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "IX_Scenes_StoryId" ON "Scenes" ("StoryId");
+2025-10-26 19:55:20.152 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "IX_Stories_UserId" ON "Stories" ("UserId");
+2025-10-26 19:55:20.156 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20251009114217_InitDb', '8.0.21');
+2025-10-26 19:55:20.163 +01:00 [INF] Applying migration '20251026182227_IdentityAdded'.
+2025-10-26 19:55:20.206 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DROP TABLE "Questions";
+2025-10-26 19:55:20.207 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DROP TABLE "Scenes";
+2025-10-26 19:55:20.208 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DROP INDEX "IX_PlayingSessions_CurrentSceneId";
+2025-10-26 19:55:20.210 +01:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "Stories" RENAME COLUMN "Code" TO "GameCode";
+2025-10-26 19:55:20.212 +01:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "AnswerOptions" RENAME COLUMN "SceneText" TO "FeedbackText";
+2025-10-26 19:55:20.212 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "AnswerOptions" RENAME COLUMN "QuestionId" TO "QuestionSceneId";
+2025-10-26 19:55:20.213 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DROP INDEX "IX_AnswerOptions_QuestionId";
+2025-10-26 19:55:20.214 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "IX_AnswerOptions_QuestionSceneId" ON "AnswerOptions" ("QuestionSceneId");
+2025-10-26 19:55:20.215 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "PlayingSessions" ADD "CurrentSceneType" INTEGER NULL;
+2025-10-26 19:55:20.215 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "AspNetRoles" (
+    "Id" TEXT NOT NULL CONSTRAINT "PK_AspNetRoles" PRIMARY KEY,
+    "Name" TEXT NULL,
+    "NormalizedName" TEXT NULL,
+    "ConcurrencyStamp" TEXT NULL
+);
+2025-10-26 19:55:20.216 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "AspNetUsers" (
+    "Id" TEXT NOT NULL CONSTRAINT "PK_AspNetUsers" PRIMARY KEY,
+    "UserName" TEXT NULL,
+    "NormalizedUserName" TEXT NULL,
+    "Email" TEXT NULL,
+    "NormalizedEmail" TEXT NULL,
+    "EmailConfirmed" INTEGER NOT NULL,
+    "PasswordHash" TEXT NULL,
+    "SecurityStamp" TEXT NULL,
+    "ConcurrencyStamp" TEXT NULL,
+    "PhoneNumber" TEXT NULL,
+    "PhoneNumberConfirmed" INTEGER NOT NULL,
+    "TwoFactorEnabled" INTEGER NOT NULL,
+    "LockoutEnd" TEXT NULL,
+    "LockoutEnabled" INTEGER NOT NULL,
+    "AccessFailedCount" INTEGER NOT NULL
+);
+2025-10-26 19:55:20.218 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "EndingScenes" (
+    "EndingSceneId" INTEGER NOT NULL CONSTRAINT "PK_EndingScenes" PRIMARY KEY AUTOINCREMENT,
+    "EndingType" INTEGER NOT NULL,
+    "EndingText" TEXT NOT NULL,
+    "StoryId" INTEGER NOT NULL,
+    CONSTRAINT "FK_EndingScenes_Stories_StoryId" FOREIGN KEY ("StoryId") REFERENCES "Stories" ("StoryId") ON DELETE CASCADE
+);
+2025-10-26 19:55:20.221 +01:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "IntroScenes" (
+    "IntroSceneId" INTEGER NOT NULL CONSTRAINT "PK_IntroScenes" PRIMARY KEY AUTOINCREMENT,
+    "IntroText" TEXT NOT NULL,
+    "StoryId" INTEGER NOT NULL,
+    CONSTRAINT "FK_IntroScenes_Stories_StoryId" FOREIGN KEY ("StoryId") REFERENCES "Stories" ("StoryId") ON DELETE CASCADE
+);
+2025-10-26 19:55:20.246 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "QuestionScenes" (
+    "QuestionSceneId" INTEGER NOT NULL CONSTRAINT "PK_QuestionScenes" PRIMARY KEY AUTOINCREMENT,
+    "SceneText" TEXT NOT NULL,
+    "Question" TEXT NOT NULL,
+    "NextQuestionSceneId" INTEGER NULL,
+    "StoryId" INTEGER NOT NULL,
+    CONSTRAINT "FK_QuestionScenes_QuestionScenes_NextQuestionSceneId" FOREIGN KEY ("NextQuestionSceneId") REFERENCES "QuestionScenes" ("QuestionSceneId") ON DELETE RESTRICT,
+    CONSTRAINT "FK_QuestionScenes_Stories_StoryId" FOREIGN KEY ("StoryId") REFERENCES "Stories" ("StoryId") ON DELETE CASCADE
+);
+2025-10-26 19:55:20.248 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "AspNetRoleClaims" (
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_AspNetRoleClaims" PRIMARY KEY AUTOINCREMENT,
+    "RoleId" TEXT NOT NULL,
+    "ClaimType" TEXT NULL,
+    "ClaimValue" TEXT NULL,
+    CONSTRAINT "FK_AspNetRoleClaims_AspNetRoles_RoleId" FOREIGN KEY ("RoleId") REFERENCES "AspNetRoles" ("Id") ON DELETE CASCADE
+);
+2025-10-26 19:55:20.249 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "AspNetUserClaims" (
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_AspNetUserClaims" PRIMARY KEY AUTOINCREMENT,
+    "UserId" TEXT NOT NULL,
+    "ClaimType" TEXT NULL,
+    "ClaimValue" TEXT NULL,
+    CONSTRAINT "FK_AspNetUserClaims_AspNetUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AspNetUsers" ("Id") ON DELETE CASCADE
+);
+2025-10-26 19:55:20.250 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "AspNetUserLogins" (
+    "LoginProvider" TEXT NOT NULL,
+    "ProviderKey" TEXT NOT NULL,
+    "ProviderDisplayName" TEXT NULL,
+    "UserId" TEXT NOT NULL,
+    CONSTRAINT "PK_AspNetUserLogins" PRIMARY KEY ("LoginProvider", "ProviderKey"),
+    CONSTRAINT "FK_AspNetUserLogins_AspNetUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AspNetUsers" ("Id") ON DELETE CASCADE
+);
+2025-10-26 19:55:20.250 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "AspNetUserRoles" (
+    "UserId" TEXT NOT NULL,
+    "RoleId" TEXT NOT NULL,
+    CONSTRAINT "PK_AspNetUserRoles" PRIMARY KEY ("UserId", "RoleId"),
+    CONSTRAINT "FK_AspNetUserRoles_AspNetRoles_RoleId" FOREIGN KEY ("RoleId") REFERENCES "AspNetRoles" ("Id") ON DELETE CASCADE,
+    CONSTRAINT "FK_AspNetUserRoles_AspNetUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AspNetUsers" ("Id") ON DELETE CASCADE
+);
+2025-10-26 19:55:20.251 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "AspNetUserTokens" (
+    "UserId" TEXT NOT NULL,
+    "LoginProvider" TEXT NOT NULL,
+    "Name" TEXT NOT NULL,
+    "Value" TEXT NULL,
+    CONSTRAINT "PK_AspNetUserTokens" PRIMARY KEY ("UserId", "LoginProvider", "Name"),
+    CONSTRAINT "FK_AspNetUserTokens_AspNetUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AspNetUsers" ("Id") ON DELETE CASCADE
+);
+2025-10-26 19:55:20.252 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX "IX_Stories_GameCode" ON "Stories" ("GameCode") WHERE [GameCode] IS NOT NULL;
+2025-10-26 19:55:20.252 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "IX_AspNetRoleClaims_RoleId" ON "AspNetRoleClaims" ("RoleId");
+2025-10-26 19:55:20.253 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX "RoleNameIndex" ON "AspNetRoles" ("NormalizedName");
+2025-10-26 19:55:20.254 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "IX_AspNetUserClaims_UserId" ON "AspNetUserClaims" ("UserId");
+2025-10-26 19:55:20.255 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "IX_AspNetUserLogins_UserId" ON "AspNetUserLogins" ("UserId");
+2025-10-26 19:55:20.256 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "IX_AspNetUserRoles_RoleId" ON "AspNetUserRoles" ("RoleId");
+2025-10-26 19:55:20.256 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "EmailIndex" ON "AspNetUsers" ("NormalizedEmail");
+2025-10-26 19:55:20.257 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX "UserNameIndex" ON "AspNetUsers" ("NormalizedUserName");
+2025-10-26 19:55:20.261 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "IX_EndingScenes_StoryId" ON "EndingScenes" ("StoryId");
+2025-10-26 19:55:20.262 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX "IX_IntroScenes_StoryId" ON "IntroScenes" ("StoryId");
+2025-10-26 19:55:20.263 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX "IX_QuestionScenes_NextQuestionSceneId" ON "QuestionScenes" ("NextQuestionSceneId");
+2025-10-26 19:55:20.264 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "IX_QuestionScenes_StoryId" ON "QuestionScenes" ("StoryId");
+2025-10-26 19:55:20.265 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "ef_temp_AnswerOptions" (
+    "AnswerOptionId" INTEGER NOT NULL CONSTRAINT "PK_AnswerOptions" PRIMARY KEY AUTOINCREMENT,
+    "Answer" TEXT NOT NULL,
+    "FeedbackText" TEXT NOT NULL,
+    "IsCorrect" INTEGER NOT NULL,
+    "QuestionSceneId" INTEGER NOT NULL,
+    CONSTRAINT "FK_AnswerOptions_QuestionScenes_QuestionSceneId" FOREIGN KEY ("QuestionSceneId") REFERENCES "QuestionScenes" ("QuestionSceneId") ON DELETE CASCADE
+);
+2025-10-26 19:55:20.267 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "ef_temp_AnswerOptions" ("AnswerOptionId", "Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+SELECT "AnswerOptionId", "Answer", "FeedbackText", "IsCorrect", "QuestionSceneId"
+FROM "AnswerOptions";
+2025-10-26 19:55:20.268 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "ef_temp_PlayingSessions" (
+    "PlayingSessionId" INTEGER NOT NULL CONSTRAINT "PK_PlayingSessions" PRIMARY KEY AUTOINCREMENT,
+    "CurrentLevel" INTEGER NOT NULL,
+    "CurrentSceneId" INTEGER NULL,
+    "CurrentSceneType" INTEGER NULL,
+    "EndTime" TEXT NULL,
+    "MaxScore" INTEGER NOT NULL,
+    "Score" INTEGER NOT NULL,
+    "StartTime" TEXT NOT NULL,
+    "StoryId" INTEGER NOT NULL,
+    "UserId" INTEGER NULL,
+    CONSTRAINT "FK_PlayingSessions_Stories_StoryId" FOREIGN KEY ("StoryId") REFERENCES "Stories" ("StoryId") ON DELETE CASCADE,
+    CONSTRAINT "FK_PlayingSessions_Users_UserId" FOREIGN KEY ("UserId") REFERENCES "Users" ("UserId") ON DELETE SET NULL
+);
+2025-10-26 19:55:20.269 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "ef_temp_PlayingSessions" ("PlayingSessionId", "CurrentLevel", "CurrentSceneId", "CurrentSceneType", "EndTime", "MaxScore", "Score", "StartTime", "StoryId", "UserId")
+SELECT "PlayingSessionId", "CurrentLevel", "CurrentSceneId", "CurrentSceneType", "EndTime", "MaxScore", "Score", "StartTime", "StoryId", "UserId"
+FROM "PlayingSessions";
+2025-10-26 19:55:20.273 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+PRAGMA foreign_keys = 0;
+2025-10-26 19:55:20.274 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DROP TABLE "AnswerOptions";
+2025-10-26 19:55:20.275 +01:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "ef_temp_AnswerOptions" RENAME TO "AnswerOptions";
+2025-10-26 19:55:20.276 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DROP TABLE "PlayingSessions";
+2025-10-26 19:55:20.277 +01:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "ef_temp_PlayingSessions" RENAME TO "PlayingSessions";
+2025-10-26 19:55:20.278 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+PRAGMA foreign_keys = 1;
+2025-10-26 19:55:20.279 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "IX_AnswerOptions_QuestionSceneId" ON "AnswerOptions" ("QuestionSceneId");
+2025-10-26 19:55:20.279 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "IX_PlayingSessions_StoryId" ON "PlayingSessions" ("StoryId");
+2025-10-26 19:55:20.280 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX "IX_PlayingSessions_UserId" ON "PlayingSessions" ("UserId");
+2025-10-26 19:55:20.280 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20251026182227_IdentityAdded', '8.0.21');
+2025-10-26 19:55:20.372 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM "Users" AS "u")
+2025-10-26 19:55:20.498 +01:00 [INF] Executed DbCommand (2ms) [Parameters=[@p0='?', @p1='?' (Size = 5), @p2='?' (Size = 5), @p3='?' (Size = 13), @p4='?' (Size = 8)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "Users" ("Email", "Firstname", "Lastname", "PasswordHash", "Username")
+VALUES (@p0, @p1, @p2, @p3, @p4)
+RETURNING "UserId";
+2025-10-26 19:55:20.503 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 20), @p1='?' (Size = 5), @p2='?' (Size = 5), @p3='?' (Size = 11), @p4='?' (Size = 6)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "Users" ("Email", "Firstname", "Lastname", "PasswordHash", "Username")
+VALUES (@p0, @p1, @p2, @p3, @p4)
+RETURNING "UserId";
+2025-10-26 19:55:20.504 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 15), @p1='?' (Size = 3), @p2='?' (Size = 6), @p3='?' (Size = 19), @p4='?' (Size = 9)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "Users" ("Email", "Firstname", "Lastname", "PasswordHash", "Username")
+VALUES (@p0, @p1, @p2, @p3, @p4)
+RETURNING "UserId";
+2025-10-26 19:55:20.507 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p5='?' (DbType = Int32), @p6='?' (Size = 141), @p7='?' (DbType = Int32), @p8='?' (DbType = Int32), @p9='?' (DbType = Int32), @p10='?' (DbType = Int32), @p11='?', @p12='?' (DbType = Int32), @p13='?' (Size = 20), @p14='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "Stories" ("Accessible", "Description", "DifficultyLevel", "Dnf", "Failed", "Finished", "GameCode", "Played", "Title", "UserId")
+VALUES (@p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14)
+RETURNING "StoryId";
+2025-10-26 19:55:20.509 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (Size = 80), @p2='?' (DbType = Int32), @p3='?' (DbType = Int32), @p4='?' (DbType = Int32), @p5='?' (DbType = Int32), @p6='?' (Size = 7), @p7='?' (DbType = Int32), @p8='?' (Size = 33), @p9='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "Stories" ("Accessible", "Description", "DifficultyLevel", "Dnf", "Failed", "Finished", "GameCode", "Played", "Title", "UserId")
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9)
+RETURNING "StoryId";
+2025-10-26 19:55:20.510 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (Size = 113), @p2='?' (DbType = Int32), @p3='?' (DbType = Int32), @p4='?' (DbType = Int32), @p5='?' (DbType = Int32), @p6='?', @p7='?' (DbType = Int32), @p8='?' (Size = 18), @p9='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "Stories" ("Accessible", "Description", "DifficultyLevel", "Dnf", "Failed", "Finished", "GameCode", "Played", "Title", "UserId")
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9)
+RETURNING "StoryId";
+2025-10-26 19:55:20.511 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p10='?' (Size = 268), @p11='?' (DbType = Int32), @p12='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "EndingScenes" ("EndingText", "EndingType", "StoryId")
+VALUES (@p10, @p11, @p12)
+RETURNING "EndingSceneId";
+2025-10-26 19:55:20.512 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 316), @p1='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "EndingScenes" ("EndingText", "EndingType", "StoryId")
+VALUES (@p0, @p1, @p2)
+RETURNING "EndingSceneId";
+2025-10-26 19:55:20.513 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 203), @p1='?' (DbType = Int32), @p2='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "EndingScenes" ("EndingText", "EndingType", "StoryId")
+VALUES (@p0, @p1, @p2)
+RETURNING "EndingSceneId";
+2025-10-26 19:55:20.515 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?', @p1='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "IntroScenes" ("IntroText", "StoryId")
+VALUES (@p0, @p1)
+RETURNING "IntroSceneId";
+2025-10-26 19:55:20.516 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?', @p1='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "IntroScenes" ("IntroText", "StoryId")
+VALUES (@p0, @p1)
+RETURNING "IntroSceneId";
+2025-10-26 19:55:20.517 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 160), @p1='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "IntroScenes" ("IntroText", "StoryId")
+VALUES (@p0, @p1)
+RETURNING "IntroSceneId";
+2025-10-26 19:55:20.517 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (Size = 79), @p2='?' (Size = 128), @p3='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "QuestionScenes" ("NextQuestionSceneId", "Question", "SceneText", "StoryId")
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING "QuestionSceneId";
+2025-10-26 19:55:20.519 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p4='?' (Size = 1), @p5='?' (Size = 114), @p6='?' (DbType = Boolean), @p7='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "AnswerOptions" ("Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+VALUES (@p4, @p5, @p6, @p7)
+RETURNING "AnswerOptionId";
+2025-10-26 19:55:20.519 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 1), @p1='?' (Size = 87), @p2='?' (DbType = Boolean), @p3='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "AnswerOptions" ("Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING "AnswerOptionId";
+2025-10-26 19:55:20.521 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 1), @p1='?' (Size = 89), @p2='?' (DbType = Boolean), @p3='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "AnswerOptions" ("Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING "AnswerOptionId";
+2025-10-26 19:55:20.523 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 2), @p1='?' (Size = 80), @p2='?' (DbType = Boolean), @p3='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "AnswerOptions" ("Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING "AnswerOptionId";
+2025-10-26 19:55:20.525 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (Size = 61), @p2='?' (Size = 218), @p3='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "QuestionScenes" ("NextQuestionSceneId", "Question", "SceneText", "StoryId")
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING "QuestionSceneId";
+2025-10-26 19:55:20.526 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p4='?' (Size = 2), @p5='?' (Size = 153), @p6='?' (DbType = Boolean), @p7='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "AnswerOptions" ("Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+VALUES (@p4, @p5, @p6, @p7)
+RETURNING "AnswerOptionId";
+2025-10-26 19:55:20.527 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 1), @p1='?' (Size = 116), @p2='?' (DbType = Boolean), @p3='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "AnswerOptions" ("Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING "AnswerOptionId";
+2025-10-26 19:55:20.527 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 2), @p1='?' (Size = 91), @p2='?' (DbType = Boolean), @p3='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "AnswerOptions" ("Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING "AnswerOptionId";
+2025-10-26 19:55:20.528 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 1), @p1='?' (Size = 154), @p2='?' (DbType = Boolean), @p3='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "AnswerOptions" ("Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING "AnswerOptionId";
+2025-10-26 19:55:20.529 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (Size = 85), @p2='?' (Size = 229), @p3='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "QuestionScenes" ("NextQuestionSceneId", "Question", "SceneText", "StoryId")
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING "QuestionSceneId";
+2025-10-26 19:55:20.529 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p4='?' (Size = 2), @p5='?' (Size = 186), @p6='?' (DbType = Boolean), @p7='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "AnswerOptions" ("Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+VALUES (@p4, @p5, @p6, @p7)
+RETURNING "AnswerOptionId";
+2025-10-26 19:55:20.531 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 2), @p1='?' (Size = 294), @p2='?' (DbType = Boolean), @p3='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "AnswerOptions" ("Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING "AnswerOptionId";
+2025-10-26 19:55:20.532 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 2), @p1='?' (Size = 342), @p2='?' (DbType = Boolean), @p3='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "AnswerOptions" ("Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING "AnswerOptionId";
+2025-10-26 19:55:20.532 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 2), @p1='?' (Size = 296), @p2='?' (DbType = Boolean), @p3='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "AnswerOptions" ("Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING "AnswerOptionId";
+2025-10-26 19:55:20.534 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (Size = 92), @p2='?' (Size = 221), @p3='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "QuestionScenes" ("NextQuestionSceneId", "Question", "SceneText", "StoryId")
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING "QuestionSceneId";
+2025-10-26 19:55:20.536 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p4='?' (Size = 1), @p5='?' (Size = 133), @p6='?' (DbType = Boolean), @p7='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "AnswerOptions" ("Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+VALUES (@p4, @p5, @p6, @p7)
+RETURNING "AnswerOptionId";
+2025-10-26 19:55:20.537 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 1), @p1='?' (Size = 247), @p2='?' (DbType = Boolean), @p3='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "AnswerOptions" ("Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING "AnswerOptionId";
+2025-10-26 19:55:20.539 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 1), @p1='?' (Size = 215), @p2='?' (DbType = Boolean), @p3='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "AnswerOptions" ("Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING "AnswerOptionId";
+2025-10-26 19:55:20.540 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (Size = 1), @p1='?' (Size = 256), @p2='?' (DbType = Boolean), @p3='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "AnswerOptions" ("Answer", "FeedbackText", "IsCorrect", "QuestionSceneId")
+VALUES (@p0, @p1, @p2, @p3)
+RETURNING "AnswerOptionId";
+2025-10-26 19:55:20.568 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = Int32), @p2='?' (DbType = Int32), @p3='?' (DbType = DateTime), @p4='?' (DbType = Int32), @p5='?' (DbType = Int32), @p6='?' (DbType = DateTime), @p7='?' (DbType = Int32), @p8='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "PlayingSessions" ("CurrentLevel", "CurrentSceneId", "CurrentSceneType", "EndTime", "MaxScore", "Score", "StartTime", "StoryId", "UserId")
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8)
+RETURNING "PlayingSessionId";
+2025-10-26 19:55:20.570 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = Int32), @p2='?' (DbType = Int32), @p3='?' (DbType = DateTime), @p4='?' (DbType = Int32), @p5='?' (DbType = Int32), @p6='?' (DbType = DateTime), @p7='?' (DbType = Int32), @p8='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "PlayingSessions" ("CurrentLevel", "CurrentSceneId", "CurrentSceneType", "EndTime", "MaxScore", "Score", "StartTime", "StoryId", "UserId")
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8)
+RETURNING "PlayingSessionId";
+2025-10-26 19:55:20.683 +01:00 [INF] User profile is available. Using '/Users/jaraazad/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+2025-10-26 19:55:20.884 +01:00 [FTL] Application startup exception
+System.InvalidOperationException: Scheme already exists: Identity.Application
+   at Microsoft.AspNetCore.Authentication.AuthenticationOptions.AddScheme(String name, Action`1 configureBuilder)
+   at Microsoft.Extensions.Options.ConfigureNamedOptions`1.Configure(String name, TOptions options)
+   at Microsoft.Extensions.Options.OptionsFactory`1.Create(String name)
+   at Microsoft.Extensions.Options.UnnamedOptionsManager`1.get_Value()
+   at Microsoft.AspNetCore.Authentication.AuthenticationSchemeProvider..ctor(IOptions`1 options, IDictionary`2 schemes)
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitRootCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.CreateServiceAccessor(ServiceIdentifier serviceIdentifier)
+   at System.Collections.Concurrent.ConcurrentDictionary`2.GetOrAdd(TKey key, Func`2 valueFactory)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(Type serviceType)
+   at Microsoft.Extensions.Internal.ActivatorUtilities.ConstructorMatcher.CreateInstance(IServiceProvider provider)
+   at Microsoft.Extensions.Internal.ActivatorUtilities.CreateInstance(IServiceProvider provider, Type instanceType, Object[] parameters)
+   at Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.ReflectionMiddlewareBinder.CreateMiddleware(RequestDelegate next)
+   at Microsoft.AspNetCore.Builder.ApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Builder.ApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+2025-10-26 19:55:20.892 +01:00 [ERR] Hosting failed to start
+System.InvalidOperationException: Scheme already exists: Identity.Application
+   at Microsoft.AspNetCore.Authentication.AuthenticationOptions.AddScheme(String name, Action`1 configureBuilder)
+   at Microsoft.Extensions.Options.ConfigureNamedOptions`1.Configure(String name, TOptions options)
+   at Microsoft.Extensions.Options.OptionsFactory`1.Create(String name)
+   at Microsoft.Extensions.Options.UnnamedOptionsManager`1.get_Value()
+   at Microsoft.AspNetCore.Authentication.AuthenticationSchemeProvider..ctor(IOptions`1 options, IDictionary`2 schemes)
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitRootCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.CreateServiceAccessor(ServiceIdentifier serviceIdentifier)
+   at System.Collections.Concurrent.ConcurrentDictionary`2.GetOrAdd(TKey key, Func`2 valueFactory)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(Type serviceType)
+   at Microsoft.Extensions.Internal.ActivatorUtilities.ConstructorMatcher.CreateInstance(IServiceProvider provider)
+   at Microsoft.Extensions.Internal.ActivatorUtilities.CreateInstance(IServiceProvider provider, Type instanceType, Object[] parameters)
+   at Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.ReflectionMiddlewareBinder.CreateMiddleware(RequestDelegate next)
+   at Microsoft.AspNetCore.Builder.ApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Builder.ApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)

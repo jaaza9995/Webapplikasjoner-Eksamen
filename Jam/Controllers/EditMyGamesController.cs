@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+/*using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Jam.DAL;
@@ -281,3 +281,4 @@ namespace Jam.Controllers
         }
     }
 }
+*/

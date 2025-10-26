@@ -1,4 +1,4 @@
-/*using Jam.DAL.AnswerOptionDAL;
+using Jam.DAL.AnswerOptionDAL;
 using Jam.DAL;
 using Jam.DAL.StoryDAL;
 using Microsoft.AspNetCore.Mvc;
@@ -25,45 +25,18 @@ public class BrowoseController : Controller
         _db = db;
     }
 
-
+    // BrowseController
     [HttpGet]
-    public async Task<IActionResult> Browse(string? search)
+    public async Task<IActionResult> ShowCode(int storyId)
     {
-        var stories = await _db.Stories
-            .Where(s => s.Accessible == Accessibility.Public &&
-                        (string.IsNullOrEmpty(search) ||
-                         s.Title.Contains(search)))
-            .Include(s => s.QuestionScenes)
-            .ToListAsync();
-
-        var model = stories.Select(s => new GameCardViewModel
-        {
-            StoryId = s.StoryId,
-            Title = s.Title,
-            Description = s.Description,
-            DifficultyLevel = s.DifficultyLevel.ToString(),
-            NumberOfQuestions = s.QuestionScenes?.Count ?? 0
-        }).ToList();
-
-        return View(model);
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> AccessPrivate(string code)
-    {
-        if (string.IsNullOrWhiteSpace(code))
-            return RedirectToAction(nameof(Browse));
-
-        var story = await _db.Stories.FirstOrDefaultAsync(s => s.Code == code);
-        if (story == null)
-        {
-            TempData["Error"] = "No game found with that code.";
-            return RedirectToAction(nameof(Browse));
-        }
-
-        // Gå videre til selve spillingen (f.eks. PlayController.Start)
-        return RedirectToAction("Start", "Play", new { storyId = story.StoryId });
+        var story = await _db.Stories.FindAsync(storyId);
+        if (story == null || story.Accessible != Accessibility.Private) return NotFound();
+        ViewBag.Code = story.GameCode;
+        ViewBag.Title = story.Title;
+        return View(); // enkelt view som skriver ut ViewBag.Code
     }
 
 
-}*/
+
+
+}

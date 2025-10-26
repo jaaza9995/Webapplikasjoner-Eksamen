@@ -13,9 +13,9 @@ public static class DBInit
         /*
         context.Database.EnsureDeleted();
         */
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
-        //context.Database.Migrate();
+        //context.Database.EnsureDeleted();
+        //context.Database.EnsureCreated();
+        context.Database.Migrate();
 
         if (!context.Users.Any())
         {

@@ -1,6 +1,26 @@
-@model Jam.ViewModels.CreateStoryViewModel
+@model Jam.ViewModels.EditStoryViewModel
+@using Jam.Models.Enums
 
 <h4>Story Endings</h4>
+
+
+
+@if (Model.Accessibility == Accessibility.Private && !string.IsNullOrEmpty(Model.GameCode))
+{
+
+    <input type="hidden" asp-for="GameCode" />
+    <div class="alert alert-info d-flex justify-content-between align-items-center">
+        <div>
+            <strong>Private game code:</strong>
+            <span class="ms-1">@Model.GameCode</span>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary"
+                onclick="navigator.clipboard.writeText('@Model.GameCode')">
+            Copy
+        </button>
+    </div>
+
+}
 
 <div class="form-group">
     <label asp-for="HighEnding"></label> <span class="text-danger">*</span>
@@ -10,8 +30,10 @@
 <div class="form-group">
     <label asp-for="MediumEnding"></label> <span class="text-danger">*</span>
     <textarea asp-for="MediumEnding" class="form-control" rows="3" placeholder="Write an ending for the gamers with medium scores.."></textarea>
+    <span asp-validation-for="MediumEnding" class="text-danger"></span>
 </div>
 <div class="form-group">
     <label asp-for="LowEnding"></label>
     <textarea asp-for="LowEnding" class="form-control" rows="3" placeholder="Write an ending for the gamers with low scores.."></textarea>
+    <span asp-validation-for="LowEnding" class="text-danger"></span>
 </div>

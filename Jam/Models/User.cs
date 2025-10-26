@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace Jam.Models;
 
-public class User
+public class User : IdentityUser
 {
     public int UserId { get; set; }
     public string Firstname { get; set; } = string.Empty;

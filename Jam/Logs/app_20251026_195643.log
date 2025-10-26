@@ -1,0 +1,48 @@
+2025-10-26 19:56:44.490 +01:00 [INF] Executed DbCommand (16ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+2025-10-26 19:56:44.515 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+2025-10-26 19:56:44.529 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+2025-10-26 19:56:44.567 +01:00 [INF] No migrations were applied. The database is already up to date.
+2025-10-26 19:56:44.755 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM "Users" AS "u")
+2025-10-26 19:56:44.852 +01:00 [INF] User profile is available. Using '/Users/jaraazad/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+2025-10-26 19:56:45.212 +01:00 [INF] Now listening on: https://localhost:7286
+2025-10-26 19:56:45.212 +01:00 [INF] Now listening on: http://localhost:5115
+2025-10-26 19:56:45.217 +01:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-26 19:56:45.218 +01:00 [INF] Hosting environment: Development
+2025-10-26 19:56:45.219 +01:00 [INF] Content root path: /Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam
+2025-10-26 19:56:45.795 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5115/ - null null
+2025-10-26 19:56:45.795 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5115/ - null null
+2025-10-26 19:56:45.795 +01:00 [INF] Request starting HTTP/1.1 GET http://localhost:5115/ - null null
+2025-10-26 19:56:45.806 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5115/ - 499 null null 13.2831ms
+2025-10-26 19:56:45.814 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5115/ - 307 0 null 21.8907ms
+2025-10-26 19:56:45.814 +01:00 [INF] Request finished HTTP/1.1 GET http://localhost:5115/ - 307 0 null 22.1832ms
+2025-10-26 19:56:45.944 +01:00 [INF] Request starting HTTP/2 GET https://localhost:7286/ - null null
+2025-10-26 19:56:46.005 +01:00 [INF] Executing endpoint 'Jam.Controllers.HomeController.Index (Jam)'
+2025-10-26 19:56:46.025 +01:00 [INF] Route matched with {action = "Index", controller = "Home", page = "", area = ""}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Index() on controller Jam.Controllers.HomeController (Jam).
+2025-10-26 19:56:46.156 +01:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT "s"."StoryId", "s"."Accessible", "s"."Description", "s"."DifficultyLevel", "s"."Dnf", "s"."Failed", "s"."Finished", "s"."GameCode", "s"."Played", "s"."Title", "s"."UserId", "q"."QuestionSceneId", "q"."NextQuestionSceneId", "q"."Question", "q"."SceneText", "q"."StoryId"
+FROM "Stories" AS "s"
+LEFT JOIN "QuestionScenes" AS "q" ON "s"."StoryId" = "q"."StoryId"
+WHERE "s"."UserId" = 1
+ORDER BY "s"."StoryId"
+2025-10-26 19:56:46.183 +01:00 [INF] Executed DbCommand (3ms) [Parameters=[@__p_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT "u"."UserId", "u"."Email", "u"."Firstname", "u"."Lastname", "u"."PasswordHash", "u"."Username"
+FROM "Users" AS "u"
+WHERE "u"."UserId" = @__p_0
+LIMIT 1
+2025-10-26 19:56:46.220 +01:00 [INF] Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT "s"."StoryId", "s"."Accessible", "s"."Description", "s"."DifficultyLevel", "s"."Dnf", "s"."Failed", "s"."Finished", "s"."GameCode", "s"."Played", "s"."Title", "s"."UserId"
+FROM "Stories" AS "s"
+WHERE "s"."UserId" = @__userId_0
+2025-10-26 19:56:46.334 +01:00 [INF] Executing ViewResult, running view Index.
+2025-10-26 19:56:46.407 +01:00 [INF] Executed ViewResult - view Index executed in 85.0347ms.
+2025-10-26 19:56:46.407 +01:00 [INF] Executed action Jam.Controllers.HomeController.Index (Jam) in 382.1802ms
+2025-10-26 19:56:46.407 +01:00 [INF] Executed endpoint 'Jam.Controllers.HomeController.Index (Jam)'
+2025-10-26 19:56:46.411 +01:00 [INF] Request finished HTTP/2 GET https://localhost:7286/ - 200 null text/html; charset=utf-8 511.7905ms

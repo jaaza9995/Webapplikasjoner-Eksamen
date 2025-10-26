@@ -4,6 +4,8 @@ namespace Jam.ViewModels
     public class EditStoryViewModel : CreateStoryViewModel
     {
         public bool IsEditMode { get; set; } = false;
+    
+
 
     }
 }
