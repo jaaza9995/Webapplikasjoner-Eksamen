@@ -4,19 +4,19 @@ namespace Jam.DAL.AnswerOptionDAL;
 
 public interface IAnswerOptionRepository
 {
-    // Read
-    Task<IEnumerable<AnswerOption>?> GetAllAnswerOptions();
-    Task<IEnumerable<AnswerOption>?> GetAnswerOptionByQuestionSceneId(int questionSceneId);
-    Task<AnswerOption?> GetAnswerOptionById(int id);
+    // Read / GET
+    Task<IEnumerable<AnswerOption>> GetAllAnswerOptions();
+    Task<IEnumerable<AnswerOption>> GetAnswerOptionsByQuestionSceneId(int questionSceneId);
+    Task<AnswerOption?> GetAnswerOptionById(int answerOptionId);
 
 
     // Create
-    Task AddAnswerOption(AnswerOption answerOption);
+    Task<bool> AddAnswerOption(AnswerOption answerOption);
 
 
     // Update
-    Task UpdateAnswerOption(AnswerOption answerOption);
+    Task<bool> UpdateAnswerOption(AnswerOption answerOption);
 
     // Delete
-    Task<bool> DeleteAnswerOption(int id);
-} 
+    Task<bool> DeleteAnswerOption(int answerOptionId);
+}
