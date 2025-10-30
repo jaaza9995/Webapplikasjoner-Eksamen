@@ -4,29 +4,29 @@ namespace Jam.DAL.StoryDAL;
 
 public interface IStoryRepository
 {
-    // Read
+    // Read / GET
     Task<IEnumerable<Story>> GetAllStories();
     Task<IEnumerable<Story>> GetAllPublicStories();
-    Task<IEnumerable<Story>> GetAllPrivateStories(); // added this
+    Task<IEnumerable<Story>> GetAllPrivateStories();
     Task<IEnumerable<Story>> GetStoriesByUserId(int userId);
-    Task<IEnumerable<Story>> GetMostRecentPlayedStories(int? userId, int count = 5);
-    Task<Story?> GetStoryById(int id);
-    Task<Story?> GetPublicStoryById(int id);
+    Task<IEnumerable<Story>> GetMostRecentPlayedStories(int userId, int count = 5);
+    Task<Story?> GetStoryById(int storyId);
+    Task<Story?> GetPublicStoryById(int storyId);
     Task<Story?> GetPrivateStoryByCode(string code);
-    Task<int?> GetAmountOfQuestionsForStory(int storyId); // added this
-    Task<string?> GetCodeForStory(int storyId); // added this
+    Task<int?> GetAmountOfQuestionsForStory(int storyId);
+    Task<string?> GetCodeForStory(int storyId);
 
 
 
     // Creation mode
-    Task AddStory(Story story);
-    Task UpdateStory(Story story);
-    Task<bool> DeleteStory(int id);
+    Task<bool> AddStory(Story story);
+    Task<bool> UpdateStory(Story story);
+    Task<bool> DeleteStory(int storyId);
     Task<bool> DoesCodeExist(string code);
 
 
     // Playing mode
-    Task IncrementPlayed(int id);
-    Task IncrementFinished(int id);
-    Task IncrementFailed(int id);
-} 
+    Task<bool> IncrementPlayed(int storyId);
+    Task<bool> IncrementFinished(int storyId);
+    Task<bool> IncrementFailed(int storyId);
+}
