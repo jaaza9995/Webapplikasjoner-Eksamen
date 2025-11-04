@@ -4,102 +4,247 @@ using Jam.Models.Enums;
 
 namespace Jam.DAL.StoryDAL;
 
-// Remember: should move business-logic to a service layer or Controller 
+// Consider adding AsNoTracking where appropriate for read-only queries
+// to improve performance by disabling change tracking 
 
 public class StoryRepository : IStoryRepository
 {
     private readonly StoryDbContext _db;
+    private readonly ILogger<StoryRepository> _logger;
 
-    public StoryRepository(StoryDbContext db)
+    public StoryRepository(StoryDbContext db, ILogger<StoryRepository> logger)
     {
         _db = db;
+        _logger = logger;
     }
 
 
-    // --------------------------------------- Read ---------------------------------------
+    // --------------------------------------- Read / GET ---------------------------------------
 
     public async Task<IEnumerable<Story>> GetAllStories()
     {
-        return await _db.Stories.ToListAsync();
-    }
-    public async Task<IEnumerable<Story>> GetAllPublicStories()
-    {
-        return await _db.Stories
-            .Where(s => s.Accessible == Accessibility.Public)
-            .ToListAsync();
+        try
+        {
+            return await _db.Stories.ToListAsync();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> GetAllStories] Failed to retrieve all stories");
+            return Enumerable.Empty<Story>(); // not returning null to avoid null reference exceptions
+        }
     }
 
-    // Added this new method to access all private stories
+    public async Task<IEnumerable<Story>> GetAllPublicStories()
+    {
+        try
+        {
+            return await _db.Stories
+                .Where(s => s.Accessible == Accessibility.Public)
+                .ToListAsync();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> GetAllPublicStories] Failed to retrieve public stories");
+            return Enumerable.Empty<Story>(); // not returning null to avoid null reference exceptions
+        }
+    }
+
     public async Task<IEnumerable<Story>> GetAllPrivateStories()
     {
-        return await _db.Stories
-            .Where(s => s.Accessible == Accessibility.Private)
-            .ToListAsync();
+        try
+        {
+            return await _db.Stories
+                .Where(s => s.Accessible == Accessibility.Private)
+                .ToListAsync();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> GetAllPrivateStories] Failed to retrieve private stories");
+            return Enumerable.Empty<Story>(); // not returning null to avoid null reference exceptions
+        }
     }
 
     public async Task<IEnumerable<Story>> GetStoriesByUserId(int userId)
     {
-        return await _db.Stories
-            .Where(s => s.UserId == userId)
-            .ToListAsync();
+        if (userId <= 0)
+        {
+            _logger.LogWarning("[StoryRepository -> GetStoriesByUserId] Invalid user id {userId} provided", userId);
+            return Enumerable.Empty<Story>(); // not returning null to avoid null reference exceptions
+        }
+
+        try
+        {
+            return await _db.Stories
+                .Where(s => s.UserId == userId)
+                .ToListAsync();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> GetStoriesByUserId] Failed to retrieve stories for user id {userId}", userId);
+            return Enumerable.Empty<Story>(); // not returning null to avoid null reference exceptions
+        }
     }
 
-    // moved .Take(count) down from var lastSessions = await _db.PlayingSessions... to return lastSessions...
-    // updated parameter (int userId, int count) to (int? userId, int count) 
-    public async Task<IEnumerable<Story>> GetMostRecentPlayedStories(int? userId, int count)
+    public async Task<IEnumerable<Story>> GetMostRecentPlayedStories(int userId, int count)
     {
-        if (userId == null)
-            return Enumerable.Empty<Story>();
+        if (userId <= 0)
+        {
+            _logger.LogWarning("[StoryRepository -> GetMostRecentPlayedStories] Invalid user id {userId} provided", userId);
+            return Enumerable.Empty<Story>(); // not returning null to avoid null reference exceptions
+        }
 
-        var lastSessions = await _db.PlayingSessions
-            .Where(ps => ps.UserId == userId)
-            .OrderByDescending(ps => ps.EndTime ?? ps.StartTime) // use EndTime if available
-            .Include(ps => ps.Story) // load related story in the same query
-            .ToListAsync();
+        try
+        {
+            var lastSessions = await _db.PlayingSessions
+                .Where(ps => ps.UserId == userId)
+                .OrderByDescending(ps => ps.EndTime ?? ps.StartTime) // use EndTime if available
+                .Include(ps => ps.Story) // load related story in the same query
+                .ToListAsync();
 
-        return lastSessions
-            .Select(ps => ps.Story!)
-            .Distinct() // in case the same story appears multiple times
-            .Take(count)
-            .ToList();
+            return lastSessions
+                .Select(ps => ps.Story!)
+                .Distinct() // in case the same story appears multiple times
+                .Take(count)
+                .ToList();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> GetMostRecentPlayedStories] Failed to retrieve most recent played stories for user id {userId}", userId);
+            return Enumerable.Empty<Story>(); // not returning null to avoid null reference exceptions
+        }
     }
 
-    public async Task<Story?> GetStoryById(int id)
+    public async Task<Story?> GetStoryById(int storyId)
     {
-        return await _db.Stories.FindAsync(id);
+        if (storyId <= 0)
+        {
+            _logger.LogWarning("[StoryRepository -> GetStoryById] Invalid story id {storyId} provided", storyId);
+            return null;
+        }
+
+        try
+        {
+            var story = await _db.Stories.FindAsync(storyId);
+            if (story == null)
+            {
+                _logger.LogInformation("[StoryRepository -> GetStoryById] No story found with id {storyId}", storyId);
+            }
+
+            return story;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> GetStoryById] Failed to get story with id {storyId}", storyId);
+            return null;
+        }
     }
 
-    public async Task<Story?> GetPublicStoryById(int id)
+    public async Task<Story?> GetPublicStoryById(int storyId)
     {
-        return await _db.Stories
-            .FirstOrDefaultAsync(s => s.StoryId == id && s.Accessible == Accessibility.Public);
+        if (storyId <= 0)
+        {
+            _logger.LogWarning("[StoryRepository -> GetPublicStoryById] Invalid story id {storyId} provided", storyId);
+            return null;
+        }
+
+        try
+        {
+            var story = await _db.Stories
+                .FirstOrDefaultAsync(s => s.StoryId == storyId && s.Accessible == Accessibility.Public);
+
+            if (story == null)
+            {
+                _logger.LogInformation("[StoryRepository -> GetPublicStoryById] No public story found with id {storyId}", storyId);
+            }
+
+            return story;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> GetPublicStoryById] Failed to get public story with id {storyId}", storyId);
+            return null;
+        }
     }
 
-    public async Task<Story?> GetPrivateStoryByCode(string GameCode)
+    public async Task<Story?> GetPrivateStoryByCode(string code)
     {
-        return await _db.Stories
-            .FirstOrDefaultAsync(s => s.GameCode == GameCode && s.Accessible == Accessibility.Private);
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            _logger.LogWarning("[StoryRepository -> GetPrivateStoryByCode] Invalid or empty code provided");
+            return null;
+        }
+
+        code = code.ToUpperInvariant().Trim(); // normalize code format, just for safety
+
+        try
+        {
+            var story = await _db.Stories
+                .SingleOrDefaultAsync(s => s.GameCode == code && s.Accessible == Accessibility.Private);
+
+            if (story == null)
+            {
+                _logger.LogInformation("[StoryRepository -> GetPrivateStoryByCode] No private story found with code {code}", code);
+            }
+
+            return story;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> GetPrivateStoryByCode] Failed to get private story with code {code}", code);
+            return null;
+        }
     }
 
-    // Created this new method to count the amount of questions in a Story
     public async Task<int?> GetAmountOfQuestionsForStory(int storyId)
     {
-        var questionCount = await _db.QuestionScenes
-            .Where(s => s.StoryId == storyId)
-            .CountAsync();
+        if (storyId <= 0)
+        {
+            _logger.LogWarning("[StoryRepository -> GetAmountOfQuestionsForStory] Invalid story id {storyId} provided", storyId);
+            return 0;
+        }
 
-        return questionCount;
+        try
+        {
+            var questionCount = await _db.QuestionScenes
+                .Where(s => s.StoryId == storyId)
+                .CountAsync();
+
+            return questionCount;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> GetAmountOfQuestionsForStory] Failed to get question count for story id {storyId}", storyId);
+            return null;
+        }
     }
 
-    // Created this new method to get the code for a Story
     public async Task<string?> GetCodeForStory(int storyId)
     {
-        var GameCode = await _db.Stories
-        .Where(s => s.StoryId == storyId)
-        .Select(s => s.GameCode)
-        .FirstOrDefaultAsync();
+        if (storyId <= 0)
+        {
+            _logger.LogWarning("[StoryRepository -> GetCodeForStory] Invalid story id {storyId} provided", storyId);
+            return null;
+        }
 
-        return GameCode;
+        try
+        {
+            var code = await _db.Stories
+                .Where(s => s.StoryId == storyId && s.Accessible == Accessibility.Private)
+                .Select(s => s.GameCode)
+                .SingleOrDefaultAsync();
+
+            if (code == null)
+            {
+                _logger.LogInformation("[StoryRepository -> GetCodeForStory] No private story code found for story id {storyId}", storyId);
+            }
+
+            return code;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> GetCodeForStory] Failed to get code for story id {storyId}", storyId);
+            return null;
+        }
     }
 
 
@@ -107,84 +252,175 @@ public class StoryRepository : IStoryRepository
 
     // --------------------------------------- Creation Mode ---------------------------------------
 
-    // I have moved the if-test and its codeblock to create a code out of DAL 
-    // This logic is now in StoryCreationController as a private method
-    public async Task AddStory(Story story)
+    public async Task<bool> AddStory(Story story)
     {
-        _db.Stories.Add(story);
-        await _db.SaveChangesAsync();
-    }
-
-    // I created this new method which is used in both StoryCreationController and
-    // StoryEditController. It is used by the method GenerateUniqueStoryCodeAsync()
-    // DoesCodeExist(string code) checks if the gerenated code is unique or not
-    public async Task<bool> DoesCodeExist(string GameCode)
-    {
-        return await _db.Stories.AnyAsync(s => s.GameCode == GameCode);
-    }
-
-    // Have to move business logic (for creating code) out of this method
-    public async Task UpdateStory(Story story)
-    {
-        if (story.Accessible == Accessibility.Private && string.IsNullOrEmpty(story.GameCode))
-        {
-            string GameCode = Guid.NewGuid().ToString("N")[..8].ToUpper(); // 8-char unique code
-            story.GameCode = GameCode;
-        }
-        else if (story.Accessible == Accessibility.Public)
-        {
-            story.GameCode = null; // remove code if switching to public
-        }
-
-        _db.Stories.Update(story);
-        await _db.SaveChangesAsync();
-    }
-
-    public async Task<bool> DeleteStory(int id)
-    {
-        var story = await _db.Stories.FindAsync(id);
         if (story == null)
         {
+            _logger.LogWarning("[StoryRepository -> AddStory] Null story object provided");
             return false;
         }
 
-        _db.Stories.Remove(story);
-        await _db.SaveChangesAsync();
-        return true;
+        try
+        {
+            _db.Stories.Add(story);
+            await _db.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> AddStory] Failed to add new story {story}", story);
+            return false;
+        }
+    }
+
+    public async Task<bool> UpdateStory(Story story)
+    {
+        if (story == null)
+        {
+            _logger.LogWarning("[StoryRepository -> UpdateStory] Null story object provided");
+            return false;
+        }
+
+        try
+        {
+            _db.Stories.Update(story);
+            await _db.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> UpdateStory] Failed to update story with id {storyId}", story.StoryId);
+            return false;
+        }
+    }
+
+    public async Task<bool> DeleteStory(int storyId)
+    {
+        if (storyId <= 0)
+        {
+            _logger.LogWarning("[StoryRepository -> DeleteStory] Invalid story id {storyId} provided", storyId);
+            return false;
+        }
+
+        try
+        {
+            var story = await _db.Stories.FindAsync(storyId);
+            if (story == null)
+            {
+                _logger.LogWarning("[StoryRepository -> DeleteStory] No story found with id {storyId}", storyId);
+                return false;
+            }
+
+            _db.Stories.Remove(story);
+            await _db.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> DeleteStory] Failed to delete story with id {storyId}", storyId);
+            return false;
+        }
+    }
+
+    public async Task<bool> DoesCodeExist(string code)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            _logger.LogWarning("[StoryRepository -> DoesCodeExist] Invalid or empty code provided");
+            return false;
+        }
+
+        code = code.ToUpperInvariant().Trim(); // normalize code format, just for safety
+
+        try
+        {
+            var exists = await _db.Stories.AnyAsync(s => s.GameCode == code);
+            return exists;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> DoesCodeExist] Failed to check existence of story code {code}", code);
+            return false;
+        }
     }
 
 
 
 
     // --------------------------------------- Playing Mode ---------------------------------------
-    
-    public async Task IncrementPlayed(int storyId)
+
+    public async Task<bool> IncrementPlayed(int storyId)
     {
-        await _db.Stories
-            .Where(s => s.StoryId == storyId)
-            .ExecuteUpdateAsync(s => s
-                .SetProperty(st => st.Played, st => st.Played + 1)
-                .SetProperty(st => st.Dnf, st => st.Dnf + 1));
+        if (storyId <= 0)
+        {
+            _logger.LogWarning("[StoryRepository -> IncrementPlayed] Invalid story id {storyId} provided", storyId);
+            return false;
+        }
+
+        try
+        {
+            await _db.Stories
+                .Where(s => s.StoryId == storyId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(st => st.Played, st => st.Played + 1)
+                    .SetProperty(st => st.Dnf, st => st.Dnf + 1));
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> IncrementPlayed] Failed to increment played count for story id {storyId}", storyId);
+            return false;
+        }
     }
 
-    // this method has been updated
-    public async Task IncrementFinished(int storyId)
+    public async Task<bool> IncrementFinished(int storyId)
     {
-        await _db.Stories
-        .Where(s => s.StoryId == storyId)
-        .ExecuteUpdateAsync(s => s
-            .SetProperty(st => st.Finished, st => st.Finished + 1)
-            .SetProperty(st => st.Dnf, st => st.Dnf > 0 ? st.Dnf - 1 : 0));
+        if (storyId <= 0)
+        {
+            _logger.LogWarning("[StoryRepository -> IncrementFinished] Invalid story id {storyId} provided", storyId);
+            return false;
+        }
+        try
+        {
+            await _db.Stories
+                .Where(s => s.StoryId == storyId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(st => st.Finished, st => st.Finished + 1)
+                    .SetProperty(st => st.Dnf, st => st.Dnf > 0 ? st.Dnf - 1 : 0));
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> IncrementFinished] Failed to increment finished count for story id {storyId}", storyId);
+            return false;
+        }
     }
 
-    // this method has been updated
-    public async Task IncrementFailed(int storyId)
+    public async Task<bool> IncrementFailed(int storyId)
     {
-        await _db.Stories
-        .Where(s => s.StoryId == storyId)
-        .ExecuteUpdateAsync(s => s
-            .SetProperty(st => st.Failed, st => st.Failed + 1)
-            .SetProperty(st => st.Dnf, st => st.Dnf > 0 ? st.Dnf - 1 : 0));
+        if (storyId <= 0)
+        {
+            _logger.LogWarning("[StoryRepository -> IncrementFailed] Invalid story id {storyId} provided", storyId);
+            return false;
+        }
+
+        try
+        {
+            await _db.Stories
+                .Where(s => s.StoryId == storyId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(st => st.Failed, st => st.Failed + 1)
+                    .SetProperty(st => st.Dnf, st => st.Dnf > 0 ? st.Dnf - 1 : 0));
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "[StoryRepository -> IncrementFailed] Failed to increment failed count for story id {storyId}", storyId);
+            return false;
+        }
     }
 }
 
