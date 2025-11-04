@@ -13,28 +13,24 @@ namespace Jam.Controllers
     public class HomeController : Controller
     {
         private readonly IStoryRepository _stories;
-        private readonly IUserRepository _users;
-        private readonly StoryDbContext _db;
 
-        public HomeController(IStoryRepository stories, IUserRepository users, StoryDbContext db)
+
+        public HomeController(IStoryRepository stories)
         {
             _stories = stories;
-            _users = users;
-            _db = db;
+     
         }
         public async Task<IActionResult> Index()
         {
-            var yourGames = await _db.Stories
-            //.Where(s => s.UserId == "1")         // bytt til innlogget bruker senere
-            .Include(s => s.QuestionScenes)
-            .AsNoTracking()
-            .ToListAsync();
-            
-            int userId = 1;
+            int userId = 1; // midlertidig til du kobler til innlogging
 
-            var user = await _users.GetUserById(userId);
+            // Hent stories via DAL i stedet for direkte DbContext
             var yourStories = await _stories.GetStoriesByUserId(userId);
 
+            // Hent nylig spilte (eksempel på gjenbruk av annen DAL-metode)
+            var recentlyPlayed = await _stories.GetMostRecentPlayedStories(userId, 3);
+
+            // Lag viewmodell for MyGames
             var model = yourStories.Select(s => new GameCardViewModel
             {
                 Title = s.Title,
@@ -46,9 +42,24 @@ namespace Jam.Controllers
                 CardType = GameCardType.MyGames
             }).ToList();
 
-            //ViewBag.FirstName = user?.Firstname ?? "Player";
-            return View(model);           // ← VIKTIG: send inn modellen
+            // Legg også til recently played (om du vil vise det i viewet)
+            model.AddRange(recentlyPlayed.Select(s => new GameCardViewModel
+            {
+                Title = s.Title,
+                Description = s.Description,
+                DifficultyOptions = s.DifficultyLevel.ToString(),
+                Accessible = s.Accessible,
+                NumberOfQuestions = s.QuestionScenes?.Count ?? 0,
+                GameCode = s.GameCode ?? "",
+                CardType = GameCardType.RecentlyPlayed
+            }));
+
+            // Succes-melding fra TempData
+            if (TempData["SuccessMessage"] != null)
+                ViewBag.SuccessMessage = TempData["SuccessMessage"];
+
+            return View(model);
         }
-        
     }
+
 }

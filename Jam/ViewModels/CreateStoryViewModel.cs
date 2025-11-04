@@ -8,9 +8,9 @@ namespace Jam.ViewModels
     {
         // Game details
         public int StoryId { get; set; }
-        [Required] public string Title { get; set; } = "";
-        [Required] public string Description { get; set; } = "";
-        [Required] public string Intro { get; set; } = "";
+        [Required] public string? Title { get; set; } 
+        [Required] public string? Description { get; set; } 
+        [Required] public string? Intro { get; set; } 
 
         public List<SelectListItem> DifficultyOptions { get; set; } = default!;
         

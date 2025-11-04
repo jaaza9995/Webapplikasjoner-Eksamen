@@ -42,29 +42,28 @@
         }
 
         @* to delete a single question*@
-        <button type="submit"
-                class="btn btn-danger"
-                formaction="@Url.Action("DeleteQuestionInline","CreateGame")"
-                formmethod="post"
-                name="deleteIndex"
-                value="@i"
-                formnovalidate>
-            Delete Question
-        </button>
+     <button type="submit"
+        class="btn btn-danger"
+        name="deleteIndex"
+        value="@i"
+        formaction="@Url.Action("DeleteQuestionInline", "CreateGame")"
+        formmethod="post"
+        formnovalidate>
+        Delete Question
+    </button>
+
+
     </div>
-
+}
 @* For å legge til flere spørsmål *@
-@* … felter for Questions[i] … *@
-
 <div class="mt-2">
     <button type="submit"
             name="action"
+            formnovalidate
             value="AddQuestion"
             class="btn btn-outline-primary">
         Add question
     </button>
     <small class="text-muted ms-2">Add at least 1 question</small>
 </div>
-
-}
 

@@ -29,8 +29,14 @@ builder.Services.AddSession(o =>
     o.Cookie.HttpOnly = true;
     o.Cookie.IsEssential = true;
 });
+
 builder.Services.AddDbContext<StoryDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("StoryDbContextConnection")));
+
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+    options.SignIn.RequireConfirmedAccount = false)
+    .AddEntityFrameworkStores<StoryDbContext>();
+
 
 var app = builder.Build();
 

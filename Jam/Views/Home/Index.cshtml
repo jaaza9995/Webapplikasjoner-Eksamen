@@ -2,12 +2,19 @@
 @{
     ViewData["Title"] = "Home Page";
 }
+@if (ViewBag.SuccessMessage != null)
+{
+    <div class="alert alert-success text-center mt-3">
+        @ViewBag.SuccessMessage
+    </div>
+}
+
 
 <div class="text-center">
     <h1 class="display-4">Welcome to Math Universe!</h1>
 <div class="d-flex justify-content-center gap-3">
     <a asp-controller="CreateGame" asp-action="Create" class="btn btn-primary">Make New Game</a>
-    <a asp-controller="Story" asp-action="AddNewGame" class="btn btn-primary">Add New Game</a>
+    <a asp-controller="Story" asp-action="AddNewGame" class="btn btn-primary">Play New Game</a>
 </div>
 </div>
 
