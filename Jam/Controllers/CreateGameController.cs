@@ -29,13 +29,13 @@ public class CreateGameController : Controller
         _scenes = sceneRepository;
     }
 
-
-
     [HttpGet]
     public IActionResult Create()
     {
+        TempData.Remove("CurrentModel");  // sørger for at vi starter på nytt hver gang
         var model = new EditStoryViewModel
         {
+            Step = 1, // start alltid på første steg
             DifficultyOptions = Enum.GetValues(typeof(DifficultyLevel))
                 .Cast<DifficultyLevel>()
                 .Select(d => new SelectListItem { Value = d.ToString(), Text = d.ToString() })
@@ -48,96 +48,57 @@ public class CreateGameController : Controller
         return View(model);
     }
 
+
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve
+    };
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(EditStoryViewModel model, string action)
     {
         // Navigasjon mellom steg
-        if (action == "Back")
+        if (action == "Next" || action == "Back")
         {
-            // Fjern valideringsfeil slik at ingenting valideres på Back
+            // Fjern valideringsfeil for å unngå blokkering ved mellomlagring
             ModelState.Clear();
 
-            // Gå ett steg tilbake
-            model.Step = Math.Max(1, model.Step - 1);
-
-            // 🔹 Først: hent forrige modell hvis den finnes
+            // 🔹 Hent tidligere modell hvis den finnes
             EditStoryViewModel? saved = null;
-            if (TempData["CurrentModel"] is string json)
-                saved = JsonSerializer.Deserialize<EditStoryViewModel>(json, new JsonSerializerOptions
-                {
-                    ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve
-                });
-                // Immediately after loading:
-                RepopulateDropdowns(saved);
+            if (TempData["CurrentModel"] is string oldJson)
+                saved = JsonSerializer.Deserialize<EditStoryViewModel>(oldJson, JsonOptions);
 
-            // 🔹 Slå sammen data – behold alltid det nyeste fra modellen
+            // 🔹 Slå sammen felter – behold alltid nyeste verdier
             if (saved != null)
             {
-                saved.Title = model.Title ?? saved.Title;
-                saved.Description = model.Description ?? saved.Description;
+                saved.Title = string.IsNullOrWhiteSpace(model.Title) ? saved.Title : model.Title;
+                saved.Description = string.IsNullOrWhiteSpace(model.Description) ? saved.Description : model.Description;
+                saved.Intro = string.IsNullOrWhiteSpace(model.Intro) ? saved.Intro : model.Intro;
                 saved.DifficultyLevel = model.DifficultyLevel != 0 ? model.DifficultyLevel : saved.DifficultyLevel;
                 saved.Accessibility = model.Accessibility != 0 ? model.Accessibility : saved.Accessibility;
-                saved.Questions = model.Questions ?? saved.Questions;
-                saved.HighEnding = model.HighEnding ?? saved.HighEnding;
-                saved.MediumEnding = model.MediumEnding ?? saved.MediumEnding;
-                saved.LowEnding = model.LowEnding ?? saved.LowEnding;
-                model = saved;
-            }
 
-            // 🔹 Lagre den sammenslåtte modellen tilbake i TempData
-            TempData["CurrentModel"] = JsonSerializer.Serialize(model);
-            TempData.Keep("CurrentModel");
-
-            RepopulateDropdowns(model);
-            return View("Create", model);
-        }
-
-
-
-
-        if (action == "Next")
-        {
-            // 🔹 Først: hent forrige modell fra TempData (hvis den finnes)
-            EditStoryViewModel? saved = null;
-            if (TempData["CurrentModel"] is string json)
-                saved = JsonSerializer.Deserialize<EditStoryViewModel>(json);
-
-            // 🔹 Flett sammen nåværende og lagret modell
-            if (saved != null)
-            {
-                // Behold ny introdata hvis brukeren endret tittel/beskrivelse
-                saved.Title = model.Title ?? saved.Title;
-                saved.Description = model.Description ?? saved.Description;
-                saved.Intro = model.Intro ?? saved.Intro;
-
-                // Hvis brukeren har fylt ut eller endret spørsmål
+                // Questions
                 if (model.Questions != null && model.Questions.Count > 0)
                     saved.Questions = model.Questions;
 
-                // Behold endings om de eksisterer
-                saved.HighEnding = model.HighEnding ?? saved.HighEnding;
-                saved.MediumEnding = model.MediumEnding ?? saved.MediumEnding;
-                saved.LowEnding = model.LowEnding ?? saved.LowEnding;
+                // Endings
+                saved.HighEnding = string.IsNullOrWhiteSpace(model.HighEnding) ? saved.HighEnding : model.HighEnding;
+                saved.MediumEnding = string.IsNullOrWhiteSpace(model.MediumEnding) ? saved.MediumEnding : model.MediumEnding;
+                saved.LowEnding = string.IsNullOrWhiteSpace(model.LowEnding) ? saved.LowEnding : model.LowEnding;
 
                 model = saved;
             }
 
-            // 🔹 Oppdater steg og lagre alt tilbake i TempData
-            model.Step++;
+            // 🔹 Oppdater steg basert på handling
+            if (action == "Next")
+                model.Step = Math.Min(3, model.Step + 1);
+            else if (action == "Back")
+                model.Step = Math.Max(1, model.Step - 1);
 
-            model.DifficultyOptions = new List<SelectListItem>();
-            model.AccessibilityOptions = new List<SelectListItem>();
-
-            TempData["CurrentModel"] = JsonSerializer.Serialize(model, new JsonSerializerOptions
-            {
-                ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve
-            });
-            TempData.Keep("CurrentModel");
-
-            ModelState.Clear();
-
-            // Initialiser spørsmål hvis tom liste (bare første gang)
+            // 🔹 Initialiser lister for de riktige stegene
             if (model.Step == 2 && (model.Questions == null || model.Questions.Count == 0))
             {
                 model.Questions = new List<CreateQuestionViewModel>
@@ -151,8 +112,6 @@ public class CreateGameController : Controller
             }
         };
             }
-
-            // Klargjør tomme endings når vi går til steg 3
             else if (model.Step == 3)
             {
                 model.HighEnding ??= "";
@@ -160,13 +119,19 @@ public class CreateGameController : Controller
                 model.LowEnding ??= "";
             }
 
+            // 🔹 Fjern dropdowns før lagring (kan ikke serialiseres)
+            model.DifficultyOptions = null;
+            model.AccessibilityOptions = null;
+
+            // 🔹 Lagre modellen i TempData
+            TempData["CurrentModel"] = JsonSerializer.Serialize(model, JsonOptions);
+            TempData.Keep("CurrentModel");
+
+            // 🔹 Gjør dropdowns klar igjen før visning
             RepopulateDropdowns(model);
+
             return View("Create", model);
         }
-
-
-
-
 
         // Tilbake til hovedview som velger partial basert på Step
 

@@ -61,5 +61,4 @@ namespace Jam.Controllers
             return View(model);
         }
     }
-
 }
