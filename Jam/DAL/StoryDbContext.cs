@@ -1,12 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Jam.Models;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
 
 namespace Jam.DAL;
 
-public class StoryDbContext : IdentityDbContext<User>
+public class StoryDbContext : DbContext
 {
     public StoryDbContext(DbContextOptions<StoryDbContext> options) : base(options)
     {

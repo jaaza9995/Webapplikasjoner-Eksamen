@@ -25,7 +25,7 @@ namespace Jam.Controllers
         public async Task<IActionResult> Index()
         {
             var yourGames = await _db.Stories
-            .Where(s => s.UserId == 1)         // bytt til innlogget bruker senere
+            //.Where(s => s.UserId == "1")         // bytt til innlogget bruker senere
             .Include(s => s.QuestionScenes)
             .AsNoTracking()
             .ToListAsync();
@@ -46,7 +46,7 @@ namespace Jam.Controllers
                 CardType = GameCardType.MyGames
             }).ToList();
 
-            ViewBag.FirstName = user?.Firstname ?? "Player";
+            //ViewBag.FirstName = user?.Firstname ?? "Player";
             return View(model);           // ← VIKTIG: send inn modellen
         }
         

@@ -6,18 +6,9 @@ using Jam.DAL.AnswerOptionDAL;
 using Jam.DAL.StoryDAL;
 using Jam.DAL.UserDAL;
 using Microsoft.AspNetCore.Identity;
-using Serilog;
-using Serilog.Events;
+
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration.GetConnectionString("StoryDbContextConnection") ?? throw new InvalidOperationException("Connection string 'StoryDbContextConnection' not found.");
-
-builder.Services.AddDefaultIdentity<IdentityUser>().AddEntityFrameworkStores<StoryDbContext>();
-
-// DbContext (SQLite)
-builder.Services.AddDbContext<StoryDbContext>(options =>
-    options.UseSqlite(builder.Configuration["ConnectionStrings:StoryDbContextConnection"])
-);
 
 // Repositories
 builder.Services.AddScoped<ISceneRepository, SceneRepository>();
@@ -26,16 +17,6 @@ builder.Services.AddScoped<IAnswerOptionRepository, AnswerOptionRepository>();
 builder.Services.AddScoped<IStoryRepository, StoryRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-var loggerConfiguration = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .WriteTo.File($"Logs/app_{DateTime.Now:yyyyMMdd_HHmmss}.log");
-
-loggerConfiguration.Filter.ByExcluding(e => e.Properties.TryGetValue("SourceContext", out var value) &&
-                            e.Level == LogEventLevel.Information &&
-                            e.MessageTemplate.Text.Contains("Executed dbCommand"));
-
-var logger = loggerConfiguration.CreateLogger();
-builder.Logging.AddSerilog(logger);
 
 builder.Services.AddRazorPages();
 builder.Services.AddSession();
@@ -48,6 +29,8 @@ builder.Services.AddSession(o =>
     o.Cookie.HttpOnly = true;
     o.Cookie.IsEssential = true;
 });
+builder.Services.AddDbContext<StoryDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("StoryDbContextConnection")));
 
 var app = builder.Build();
 
@@ -67,9 +50,6 @@ app.UseHttpsRedirection();
 // Viktig for css/js og _ValidationScriptsPartial
 //app.UseStaticFiles();
 
-app.UseAuthorization();
-app.UseAuthentication();
-app.MapRazorPages();
 app.UseRouting();
 app.UseSession();// Session må være før Authorization/Endpoints
 

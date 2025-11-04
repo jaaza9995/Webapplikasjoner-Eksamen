@@ -335,10 +335,12 @@
 /Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/bin/Debug/net8.0/runtimes/win/lib/net7.0/System.Security.Cryptography.ProtectedData.dll
 /Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/bin/Debug/net8.0/runtimes/win/lib/net7.0/System.Windows.Extensions.dll
 /Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/obj/Debug/net8.0/Jam.MvcApplicationPartsAssemblyInfo.cs
+/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/bin/Debug/net8.0/Microsoft.Extensions.Caching.Abstractions.dll
+/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/bin/Debug/net8.0/Microsoft.Extensions.Configuration.Abstractions.dll
 /Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/bin/Debug/net8.0/Microsoft.Extensions.Primitives.dll
-/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/bin/Debug/net8.0/Serilog.dll
-/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/bin/Debug/net8.0/Serilog.Extensions.Logging.dll
-/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/bin/Debug/net8.0/Serilog.Sinks.File.dll
 /Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/bin/Debug/net8.0/System.Diagnostics.DiagnosticSource.dll
-/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/bin/Debug/net8.0/Castle.Core.dll
-/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/bin/Debug/net8.0/Microsoft.EntityFrameworkCore.Proxies.dll
+/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/bin/Debug/net8.0/System.IO.Pipelines.dll
+/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/bin/Debug/net8.0/System.Text.Encodings.Web.dll
+/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/bin/Debug/net8.0/System.Text.Json.dll
+/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/bin/Debug/net8.0/runtimes/linux-musl-s390x/native/libe_sqlite3.so
+/Users/jaraazad/Desktop/Webapplikasjoner_ITPE3200/Webapplikasjoner-Eksamen-1/Jam/bin/Debug/net8.0/runtimes/browser/lib/net8.0/System.Text.Encodings.Web.dll
